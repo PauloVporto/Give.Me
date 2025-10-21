@@ -1,165 +1,25 @@
-name: API Tests (Postman/Newman)
+# .github/workflows/ci.yml
+name: Frontend E2E (Cypress)
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, Tests, Postman ]
   pull_request:
-
-permissions:
-  contents: read
+    branches: [ main, Tests ]
 
 jobs:
-  api-tests:
+  e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Python deps
-        working-directory: backend
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # >>> Removemos o passo que fazia regex no settings.py <<<
-      # Criamos um settings_ci.py leve que herda do settings e força SQLite
-      - name: Create CI settings module (settings_ci.py)
-        working-directory: backend/backend
-        run: |
-          cat > settings_ci.py <<'PY'
-          import os
-          from pathlib import Path
-          # Importa o settings original (sem modificar o arquivo do projeto)
-          from .settings import *  # noqa
-
-          # Garante que o CI suba com uma SECRET_KEY e hosts válidos
-          SECRET_KEY = os.environ.get('SECRET_KEY', 'ci-secret-key')
-          DEBUG = True
-          ALLOWED_HOSTS = ['*']
-
-          # Força SQLite no CI
-          DATABASES = {
-              'default': {
-                  'ENGINE': 'django.db.backends.sqlite3',
-                  'NAME': BASE_DIR / 'db.sqlite3',  # BASE_DIR já vem do settings importado
-              }
-          }
-          PY
-
-      # Garante /api/health/ e alias /api/token/ + import correto do SimpleJWT
-      - name: Add health route + token alias in urls.py
-        working-directory: backend/backend
-        run: |
-          python - <<'PY'
-          import pathlib
-          p = pathlib.Path('urls.py')
-          s = p.read_text()
-
-          # Imports necessários
-          if 'from django.http import JsonResponse' not in s:
-              s = s.replace(
-                  'from django.urls import path, include',
-                  'from django.urls import path, include\nfrom django.http import JsonResponse'
-              )
-          if 'from rest_framework_simplejwt.views import TokenObtainPairView' not in s:
-              s = s.replace(
-                  'from django.urls import path, include',
-                  'from django.urls import path, include\nfrom rest_framework_simplejwt.views import TokenObtainPairView'
-              )
-
-          # Health check
-          if 'def health_check' not in s:
-              s = s.replace(
-                  'urlpatterns = [',
-                  "def health_check(request):\n"
-                  "    return JsonResponse({'status': 'ok'})\n\n"
-                  'urlpatterns = ['
-              )
-          if "path('api/health/'" not in s and 'api/health/' not in s:
-              s = s.replace(
-                  'urlpatterns = [',
-                  "urlpatterns = [\n    path('api/health/', health_check, name='health_check'),"
-              )
-
-          # Token alias para bater com a coleção Postman
-          if "path('api/token/'" not in s and '/api/token/' not in s:
-              s = s.replace(
-                  'urlpatterns = [',
-                  "urlpatterns = [\n    path('api/token/', TokenObtainPairView.as_view(), name='token'),"
-              )
-
-          p.write_text(s)
-          PY
-
-      - name: Migrate DB and create admin user
-        working-directory: backend
-        env:
-          DJANGO_SETTINGS_MODULE: backend.settings_ci
-          DJANGO_SUPERUSER_USERNAME: admin
-          DJANGO_SUPERUSER_EMAIL: admin@example.com
-          DJANGO_SUPERUSER_PASSWORD: password
-        run: |
-          python manage.py migrate --noinput
-          python - <<'PY'
-          import os
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE','backend.settings_ci')
-          import django; django.setup()
-          from django.contrib.auth.models import User
-          if not User.objects.filter(username='admin').exists():
-              User.objects.create_superuser('admin','admin@example.com','password')
-          print('Admin ensured.')
-          PY
-
-      - name: Start Django (background)
-        working-directory: backend
-        env:
-          DJANGO_SETTINGS_MODULE: backend.settings_ci
-        run: |
-          nohup python manage.py runserver 0.0.0.0:8000 > ../django.log 2>&1 &
-          echo $! > ../django.pid
-          for i in {1..40}; do
-            curl -s http://127.0.0.1:8000/api/health/ >/dev/null && break
-            sleep 1
-          done
-
-      - name: Set up Node & Newman
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Install Newman
-        run: npm i -g newman newman-reporter-htmlextra
-
-      - name: Run Postman tests (Newman)
-        run: |
-          mkdir -p reports/postman
-          newman run tests/postman/postman_collection.json \
-            -e tests/postman/postman_environment_local.json \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export reports/postman/report.html
-
-      - name: Upload Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: postman-report
-          path: reports/postman/report.html
-          retention-days: 7
-
-      - name: Show Django log on failure
-        if: failure()
-        run: |
-          echo "===== django.log ====="
-          cat django.log || true
-
-      - name: Stop Django (cleanup)
-        if: always()
-        run: |
-          if [ -f django.pid ]; then kill "$(cat django.pid)" || true; fi
+      
