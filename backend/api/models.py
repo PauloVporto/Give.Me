@@ -2,6 +2,17 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 
+class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(unique=True, null=False)
+    slug = models.TextField(unique=True, null=False)
+    def __str__(self): return self.name
+
+class City(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(null=False)
+    state = models.TextField(null=True, blank=True)
+    def __str__(self): return self.name
 class Item(models.Model):
     STATUS_CHOICES = [('new', 'Novo'), ('used', 'Usado')]
     LISTING_STATE_CHOICES = [('active', 'Ativo'), ('inactive', 'Inativo')]
@@ -18,21 +29,9 @@ class Item(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self): return self.title
 
-class Category(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(unique=True, Null=False)
-    slug = models.TextField(unique=True, Null=False)
-    def __str__(self): return self.name
-
 class ItemPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='photos')
     url = models.TextField()
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-
-class City(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(null=False)
-    state = models.TextField(null=True, Blanc=True)
-    def __str__(self): return self.name

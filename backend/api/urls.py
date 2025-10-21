@@ -1,9 +1,13 @@
 from django.urls import path
-from . import views
+from . import views, image_views
 
 urlpatterns = [
-    path("items/", views.CreateItemView.as_view(), name="note-list"),
-    path("items/delete/<int:pk>/", views.DeleteItemView.as_view(), name="delete-note"),
-    path("item/update/<int:pk>/", views.UpdateItemView.as_view(), name="update-note"),
-    path("items/<int:pk>/", views.ReadItemView.as_view(), name="note-detail"),
+    # Endpoints REST completos
+    path("items/", views.ItemListCreateView.as_view(), name="items-list-create"),
+    path("items/<uuid:id>/", views.ItemDetailView.as_view(), name="item-detail"),
+    
+    # Endpoints de upload de imagens
+    path("items/<uuid:item_id>/images/", image_views.upload_item_images, name="upload-item-images"),
+    path("items/<uuid:item_id>/images/<uuid:photo_id>/", image_views.delete_item_image, name="delete-item-image"),
+    path("items/<uuid:item_id>/images/", image_views.get_item_images, name="get-item-images"),
 ]
