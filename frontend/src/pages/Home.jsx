@@ -1,15 +1,15 @@
 import "../styles/Home.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Box, Stack, Chip, Typography } from "@mui/material";
+import { Box, Stack, Chip, Typography, Card, CardMedia, CardContent, CardActionArea } from "@mui/material";
 import api from "../api";
-import { MainHeader, SearchBar, BottomNav, TopNav, fullUrl, LoadingContainer, EmptyState } from "./Base";
+import { Navbar, fullUrl, LoadingContainer, EmptyState } from "./Base";
 
 export default function Home() {
   const [items, setItems] = useState([]);
   const [allItems, setAllItems] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,11 +44,10 @@ export default function Home() {
     return () => (mounted = false);
   }, []);
 
-  const filterItems = (categoryName, query) => {
+  const filterItemsByCategory = (categoryName, query) => {
     let filtered = allItems;
 
-    // Filtrar por categoria
-    if (categoryName !== "All") {
+    if (categoryName !== "Todos") {
       filtered = filtered.filter(item => {
         if (item.category_name) {
           return item.category_name === categoryName;
@@ -78,20 +77,19 @@ export default function Home() {
 
   const handleCategoryFilter = (categoryName) => {
     setSelectedCategory(categoryName);
-    const filtered = filterItems(categoryName, searchQuery);
+    const filtered = filterItemsByCategory(categoryName, searchQuery);
     setItems(filtered);
   };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    const filtered = filterItems(selectedCategory, query);
+    const filtered = filterItemsByCategory(selectedCategory, query);
     setItems(filtered);
   };
 
   return (
     <div className="home">
-      <MainHeader />
-      <SearchBar />
+      <Navbar/>
 
       <section className="highlight">
         <img
@@ -110,23 +108,23 @@ export default function Home() {
         <Typography variant="h6" sx={{ mb: 1 }}>Categories</Typography>
 
         <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1 }}>
-          {/* All chip */}
+          {/* Todos chip */}
           <Chip
-            label="All"
+            label="Todos"
             clickable
-            onClick={() => handleCategoryFilter("All")}
-            variant={selectedCategory === "All" ? "filled" : "outlined"}
-            color={selectedCategory === "All" ? "success" : "default"}
+            onClick={() => handleCategoryFilter("Todos")}
+            variant={selectedCategory === "Todos" ? "filled" : "outlined"}
+            color={selectedCategory === "Todos" ? "success" : "default"}
             size="medium"
-            sx={{ fontWeight: selectedCategory === "All" ? 600 : 500 }}
-            aria-pressed={selectedCategory === "All"}
+            sx={{ fontWeight: selectedCategory === "Todos" ? 600 : 500 }}
+            aria-pressed={selectedCategory === "Todos"}
           />
 
           {/* Category chips from API */}
           {categories && categories.length > 0 ? (
-            categories.map((cat) => {
-              const name = typeof cat === 'string' ? cat : (cat.name || cat.title || String(cat.id));
-              const key = typeof cat === 'object' ? (cat.id ?? name) : name;
+            categories.map((category) => {
+              const name = typeof category === 'string' ? category : (category.name || category.title || String(category.id));
+              const key = typeof category === 'object' ? (category.id ?? name) : name;
               return (
                 <Chip
                   key={key}
@@ -142,7 +140,7 @@ export default function Home() {
               );
             })
           ) : (
-            <Typography variant="body2" color="text.secondary">No categories</Typography>
+            <Typography variant="body2" color="text.secondary">Sem Categorias</Typography>
           )}
         </Stack>
       </Box>
@@ -151,27 +149,51 @@ export default function Home() {
         {loading && <LoadingContainer />}
         {!loading && items.length === 0 && <EmptyState message="Sem anúncios ainda." />}
 
-        {!loading &&
+          {!loading &&
           items.map((it) => {
-            const cover = fullUrl(it.images?.[0]);
+            const cover = fullUrl(it.images?.[0]) || "/placeholder.png";
             const slugOrId = it.slug || it.id;
+            // determine if item is new (support both portuguese/english labels)
+            const statusText = (it.status || "").toString();
+            const statusLower = statusText.toLowerCase();
+            const isNew = statusLower === 'novo' || statusLower === 'new';
+            const conditionLabel = statusText || "Condição não especificada";
+
             return (
-              <Link key={it.id} className="product-card" to={`/product/${slugOrId}`}>
-                <img
-                  src={cover || "/placeholder.png"}
-                  alt={it.title || "Item"}
-                  onError={(e) => (e.currentTarget.src = "/placeholder.png")}
-                />
-                <div className="product-info">
-                  <h3 className="product-title">{it.title || "Sem título"}</h3>
-                  <p className="product-condition">{it.status || "Condição não especificada"}</p>
-                </div>
-              </Link>
+              <Box key={it.id} className="product-item">
+                <Card sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+                  <CardActionArea component={Link} to={`/product/${slugOrId}`}>
+                    <CardMedia
+                      component="img"
+                      image={cover}
+                      alt={it.title || 'Item'}
+                      sx={{ aspectRatio: '1/1', objectFit: 'cover' }}
+                      onError={(e) => (e.currentTarget.src = '/placeholder.png')}
+                    />
+                    <CardContent sx={{ pt: 1, pb: 2 }}>
+                      <Typography variant="subtitle1" noWrap>
+                        {it.title || 'Sem título'}
+                      </Typography>
+
+                      <Chip
+                        label={conditionLabel}
+                        size="small"
+                        sx={{
+                          mt: 1,
+                          bgcolor: isNew ? '#e6f6eb' : '#fff7e6',
+                          color: isNew ? '#1f7a2e' : '#8a6b00',
+                          fontWeight: 600,
+                        }}
+                      />
+                    </CardContent>
+                  </CardActionArea>
+
+                  
+                </Card>
+              </Box>
             );
           })}
       </section>
-
-      <BottomNav activePage="home" />
     </div>
   );
 }

@@ -9,7 +9,6 @@ import {
   InputAdornment,
   Box,
   CircularProgress,
-  Paper,
   Button,
   Container,
   Tabs,
@@ -23,19 +22,11 @@ import {
   FiHome, 
   FiShoppingCart,
   FiPlus,
-  FiSquare,
-  FiPlusSquare,
-  FiDivideSquare,
-  FiXSquare,
-  FiBox,
   FiCodesandbox,
-  FiInbox
 } from "react-icons/fi";
 
-// Constante base para URLs de imagens
 export const BASE_URL = "http://localhost:8000";
 
-// Função utilitária para construir URLs completas
 export function fullUrl(u) {
   if (!u) return "";
   if (u.startsWith("http")) return u;
@@ -43,7 +34,6 @@ export function fullUrl(u) {
   return `${BASE_URL}/${u}`;
 }
 
-// Componente de navegação no topo (Top Nav)
 export function TopNav({ activePage = "home", onSearch }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,18 +75,19 @@ export function TopNav({ activePage = "home", onSearch }) {
   };
 
   return (
-    <AppBar 
-      position="fixed" 
-      sx={{ 
-        backgroundColor: '#fff',
-        color: '#222',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        top: 0,
-        zIndex: 1100
-      }}
-    >
-      <Container maxWidth="xl">
-        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 0, sm: 2 } }}>
+    <>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          backgroundColor: '#e7fff1dc',
+          color: '#222',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          top: 0,
+          zIndex: 1100
+        }}
+      >
+        <Container maxWidth="xl">
+          <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 0, sm: 2 } }}>
           {/* Logo */}
           <Typography 
             variant="h5" 
@@ -314,16 +305,45 @@ export function TopNav({ activePage = "home", onSearch }) {
           </Tabs>
         </Box>
       </Container>
-    </AppBar>
+      </AppBar>
+
+      {/* Spacer to push page content below the fixed AppBar */}
+      <Box sx={{ height: { xs: '120px', md: '64px' } }} />
+    </>
   );
 }
 
-// Mantém BottomNav para compatibilidade, mas agora chama TopNav
-export function BottomNav({ activePage = "home" }) {
+export function Navbar({ activePage = "home" }) {
   return <TopNav activePage={activePage} />;
 }
 
-// Componente de Header com botão de voltar (simplificado para web)
+export function BottomNav({ activePage = "home" }) {
+  // A simple bottom fixed navigation bar for mobile / small screens
+  return (
+    <Box className="bottom-nav" sx={{ display: { xs: 'flex', md: 'none' } }}>
+      <Link to="/" className={`nav-link ${activePage === 'home' ? 'active' : ''}`}>
+        <FiHome />
+        <span>Home</span>
+      </Link>
+
+      <Link to="/create-item" className={`nav-link`}>
+        <FiPlus />
+        <span>Novo</span>
+      </Link>
+
+      <Link to="/favorites" className={`nav-link ${activePage === 'favorites' ? 'active' : ''}`}>
+        <FiHeart />
+        <span>Favoritos</span>
+      </Link>
+
+      <Link to="/profile" className={`nav-link ${activePage === 'profile' ? 'active' : ''}`}>
+        <FiUser />
+        <span>Perfil</span>
+      </Link>
+    </Box>
+  );
+}
+
 export function BackHeader({ title, rightElement, onBack }) {
   const navigate = useNavigate();
 
@@ -382,54 +402,9 @@ export function BackHeader({ title, rightElement, onBack }) {
   );
 }
 
-// Componente de Header principal - removido pois agora é TopNav
-// Mantido para compatibilidade
-export function MainHeader({ onAddClick }) {
-  return null; // Funcionalidade movida para TopNav
-}
-
-// Componente de busca (usado na Home)
-export function SearchBar({ placeholder = "What are you looking for?", onSearch }) {
-  return (
-    <TextField
-      fullWidth
-      variant="outlined"
-      placeholder={placeholder}
-      onChange={(e) => onSearch && onSearch(e.target.value)}
-      sx={{
-        mb: 3,
-        maxWidth: '600px',
-        '& .MuiOutlinedInput-root': {
-          borderRadius: '12px',
-          backgroundColor: '#f0f7f0',
-          '& fieldset': {
-            border: 'none',
-          },
-          '&:hover fieldset': {
-            border: 'none',
-          },
-          '&.Mui-focused fieldset': {
-            border: '1px solid #28a745',
-          },
-        },
-      }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <FiSearch size={20} style={{ color: '#666' }} />
-          </InputAdornment>
-        ),
-      }}
-    />
-  );
-}
-
-// Componente de Container para páginas
 export function PageContainer({ children, maxWidth = "xl" }) {
   return (
     <>
-      {/* Spacer para compensar navbar fixa */}
-      <Box sx={{ height: { xs: '120px', md: '64px' } }} />
       <Container 
         maxWidth={maxWidth} 
         sx={{ 
@@ -443,7 +418,6 @@ export function PageContainer({ children, maxWidth = "xl" }) {
   );
 }
 
-// Estilos comuns para inputs (mantido para compatibilidade)
 export const inputStyle = {
   width: "100%",
   padding: "12px 14px",
@@ -454,7 +428,6 @@ export const inputStyle = {
   outline: "none",
 };
 
-// Estilos comuns para labels (mantido para compatibilidade)
 export const labelStyle = {
   display: "block",
   fontSize: 12,
@@ -462,7 +435,6 @@ export const labelStyle = {
   marginBottom: 6,
 };
 
-// Estilos comuns para botões (mantido para compatibilidade)
 export const buttonStyle = {
   border: "1px solid #ddd",
   background: "#fff",
@@ -472,7 +444,6 @@ export const buttonStyle = {
   color: "#333",
 };
 
-// Estilos para botão primário (mantido para compatibilidade)
 export const primaryButtonStyle = {
   ...buttonStyle,
   background: "var(--main-green)",
@@ -481,7 +452,6 @@ export const primaryButtonStyle = {
   fontWeight: 600,
 };
 
-// Componente de container de loading
 export function LoadingContainer({ message = "Carregando..." }) {
   return (
     <Box 
@@ -503,7 +473,6 @@ export function LoadingContainer({ message = "Carregando..." }) {
   );
 }
 
-// Componente de mensagem vazia
 export function EmptyState({ message = "Nenhum item encontrado" }) {
   return (
     <Box 
