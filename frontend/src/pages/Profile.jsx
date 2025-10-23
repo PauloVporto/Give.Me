@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Profile.css";
-import { BackHeader, BottomNav } from "./Base";
+import { BackHeader, Navbar } from "./Base";
 
 const mockItems = [
   { title: "Vintage Camera", img: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" },
@@ -28,9 +28,10 @@ export default function Profile() {
       </Link>
     );
   }
-
+  
   return (
     <div className="profile-page">
+      <Navbar activePage="profile" />
       <BackHeader title="Profile" />
       <div className="profile-avatar">
         <div className="avatar-img" />
@@ -63,7 +64,6 @@ export default function Profile() {
           <div className="empty-tab">Content for "{tabs[activeTab]}" tab</div>
         )}
       </section>
-      <BottomNav activePage="profile" />
     </div>
   );
 }
