@@ -3,15 +3,54 @@ import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
-import { FiStar, FiShield, FiPackage, FiMapPin, FiTag, FiMessageCircle } from "react-icons/fi";
-import "../styles/Detail.css";
-import { BackHeader, BottomNav, fullUrl, LoadingContainer } from "./Base";
+import {
+  Box,
+  Grid,
+  Typography,
+  Button,
+  Card,
+  CardMedia,
+  CardContent,
+  Avatar,
+  IconButton,
+  Divider,
+  Chip,
+  CircularProgress,
+} from "@mui/material";
+import { ArrowBack, Edit, ChatBubbleOutline, Star, LocationOn, Tag as TagIcon } from "@mui/icons-material";
+import { fullUrl, Navbar } from "./Base";
+
+function SmallImage({ src, alt, onClick, selected }) {
+  return (
+    <Box
+      component="img"
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      sx={{
+        width: 80,
+        height: 80,
+        objectFit: "cover",
+        borderRadius: 1.5,
+        cursor: "pointer",
+        border: selected ? "3px solid" : "2px solid",
+        borderColor: selected ? "primary.main" : "grey.300",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "primary.main",
+          transform: "scale(1.05)",
+        }
+      }}
+    />
+  );
+}
 
 export default function ProductDetail() {
-  const { slug } = useParams(); // pode ser slug ou id
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   const currentUserId = useMemo(() => {
     try {
@@ -31,8 +70,7 @@ export default function ProductDetail() {
         const res = await api.get(`/items/${slug}/`);
         if (mounted) setItem(res.data);
       } catch (e) {
-        console.error("Erro ao buscar item:", e);
-        console.error("Detalhes:", e.response?.data);
+        console.error("Erro ao buscar item:", e.response || e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -48,93 +86,203 @@ export default function ProductDetail() {
 
   if (loading) {
     return (
-      <main className="detail-page">
-        <div className="detail-card">
-          <LoadingContainer />
-        </div>
-      </main>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <CircularProgress />
+      </Box>
     );
   }
+
   if (!item) {
     return (
-      <main className="detail-page">
-        <div className="detail-card">
-          <h2>Item não encontrado</h2>
-          <button className="btn" onClick={() => navigate(-1)}>
-            <FiArrowLeft /> Voltar
-          </button>
-        </div>
-      </main>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", px: 2 }}>
+        <Card sx={{ p: 2, maxWidth: 400 }}>
+          <CardContent>
+            <Typography variant="h6">Item não encontrado</Typography>
+            <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
+              Voltar
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
     );
   }
+
+  const images = (item.images || item.photos || []).map((img) => fullUrl(img));
+  const mainImage = images[selectedImage] || images[0] || "/placeholder.png";
 
   const typeLabel =
     item.type === "Sell" ? "Disponível para Venda" :
     item.type === "Donation" ? "Disponível para Doação" : "Disponível para Troca";
 
-  const cover = item.images?.[0] || item.photos?.[0];
-  const imageUrl = fullUrl(cover);
-
   return (
-    <main className="detail-page">
-      <article className="detail-card">
-        <BackHeader 
-          rightElement={isOwner && <Link to={`/edit-item/${item.id}`} className="link-edit">Editar</Link>}
-        />
+    <>
+      <Navbar />
+      <Box sx={{ bgcolor: "background.default" }}>
+        <Grid container spacing={0}>
+          <Grid item xs={12} md={12} lg={12}>
+          <Box sx={{ bgcolor: "background.paper", px: { xs: 2, sm: 3, md: 15 } }}>
+            <Box sx={{ display: "flex", alignItems: "center", py: 2, borderBottom: 1, borderColor: "divider" }}>
+              <IconButton onClick={() => navigate(-1)}>
+                <ArrowBack />
+              </IconButton>
+              <Box sx={{ flex: 1 }} />
+              {isOwner && (
+                <Button component={Link} to={`/edit-item/${item.id}`} startIcon={<Edit />}>
+                  Editar
+                </Button>
+              )}
+            </Box>
 
-        <div className="detail-hero">
-          <img 
-            src={imageUrl || "/placeholder.png"} 
-            alt={item.title} 
-            onError={(e) => {
-              console.log('Erro ao carregar imagem:', e);
-              e.currentTarget.src = "/placeholder.png";
-            }}
-          />
-        </div>
+            <CardMedia
+              component="img"
+              image={mainImage}
+              alt={item.title}
+              sx={{ 
+                width: "100%", 
+                height: { xs: 350, sm: 450, md: 550 }, 
+                objectFit: "contain", 
+                bgcolor: "grey.100",
+                my: 2,
+                borderRadius: 2
+              }}
+            />
 
-        <div className="detail-type">{typeLabel}</div>
-        <h1 className="detail-title">{item.title}</h1>
-        {item.description && <p className="detail-desc">{item.description}</p>}
+            <Box sx={{ pb: 4 }}>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap", mb: 2 }}>
+                <Typography variant="overline" color="text.secondary" sx={{ fontSize: "0.75rem" }}>{typeLabel}</Typography>
+                <Chip icon={<TagIcon />} label={item.category_name || "—"} size="small" />
+              </Box>
 
-        <div className="detail-badges">
-          <div className="badge-item">
-            <FiTag /> Categoria: {item.category_name || "—"}
-          </div>
-          <div className="badge-item">
-            <FiMapPin /> Localização: {item.city?.name || "—"}
-          </div>
-          <div className="badge-item">
-            <FiPackage /> Condição: {item.status === 'new' ? 'Novo' : 'Usado'}
-          </div>
-          {item.type === "Sell" && (
-            <div className="badge"><FiTag /><span>{item.price ? `R$ ${item.price}` : "Preço a combinar"}</span></div>
-          )}
-        </div>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2 }}>
+                <Typography variant="h4" sx={{ fontWeight: 500, flex: 1 }}>{item.title}</Typography>
+                <Typography variant="h4" color="primary" fontWeight="bold" sx={{ whiteSpace: "nowrap" }}>
+                  {item.type === "Sell" ? (item.price ? `R$ ${item.price}` : "Preço a combinar") : (item.type === "Donation" ? "Doação" : "Troca")}
+                </Typography>
+              </Box>
+              {item.description && (
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 2, whiteSpace: "pre-line", lineHeight: 1.7 }}>
+                  {item.description}
+                </Typography>
+              )}
 
-        <ul className="detail-specs">
-          <li className="spec-row">
-            <div className="spec-left"><FiPackage /><span>Item Condition</span></div>
-            <div className="spec-right">
-              {item.condition || "—"}
-              {item.rating && <span className="spec-rating"><FiStar /> {Number(item.rating).toFixed(1)}</span>}
-            </div>
-          </li>
-          <li className="spec-row">
-            <div className="spec-left"><FiShield /><span>Donor Reputation</span></div>
-            <div className="spec-right">{item.reputation || "94% (117 reviews)"}</div>
-          </li>
-        </ul>
+              <Divider sx={{ my: 3 }} />
 
-        <footer className="detail-actions">
-          <button className="btn btn-primary">
-            {item.type === "Sell" ? "Buy" : item.type === "Donation" ? "Request" : "Propose Trade"}
-          </button>
-          <button className="btn btn-ghost"><FiMessageCircle /> Chat</button>
-        </footer>
-      </article>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  <LocationOn fontSize="small" color="action" />
+                  <Typography variant="body1">{item.city?.name || "—"}</Typography>
+                </Box>
+                <Divider orientation="vertical" flexItem />
+                <Typography variant="body1">Condição: <strong>{item.status === 'new' ? 'Novo' : 'Usado'}</strong></Typography>
+                {item.rating && (
+                  <>
+                    <Divider orientation="vertical" flexItem />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Star fontSize="small" sx={{ color: 'gold' }} />
+                      <Typography variant="body1" fontWeight="medium">{Number(item.rating).toFixed(1)}</Typography>
+                    </Box>
+                  </>
+                )}
+              </Box>
 
-      <BottomNav />
-    </main>
+              <Box sx={{ display: "flex", gap: 1.5, mt: 3, flexWrap: "wrap", pb: 2 }}>
+                {images.slice(0, 8).map((src, idx) => (
+                  <SmallImage key={idx} src={src} alt={`${item.title} ${idx}`} onClick={() => setSelectedImage(idx)} selected={idx === selectedImage} />
+                ))}
+              </Box>
+            </Box>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={12} lg={3}>
+          <Box sx={{ 
+            bgcolor: "background.paper", 
+            minHeight: { md: "100vh" }, 
+            borderLeft: { md: 1 }, 
+            borderColor: "divider",
+            px: { xs: 2, sm: 3 },
+            py: { xs: 3, md: 0 }
+          }}>
+            <Box sx={{ 
+              position: { xs: "relative", md: "sticky" }, 
+              top: { md: 80 },
+              pt: { md: 3 },
+              pb: 3,
+              zIndex: 10
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Avatar 
+                  src={fullUrl(item.owner_avatar || item.user_avatar || item.avatar)} 
+                  alt={item.owner_name || item.username || 'Vendedor'}
+                  sx={{ width: 56, height: 56 }}
+                />
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6">{item.owner_name || item.username || 'Vendedor'}</Typography>
+                  <Typography variant="body2" color="text.secondary">{item.owner_reputation || item.reputation || '—'}</Typography>
+                </Box>
+              </Box>
+
+              <Divider sx={{ mb: 3 }} />
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                <Button 
+                  variant="contained" 
+                  size="large" 
+                  fullWidth 
+                  startIcon={<ChatBubbleOutline />} 
+                  sx={{ 
+                    py: 1.5,
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    textTransform: "none"
+                  }}
+                >
+                  {item.type === 'Sell' ? 'Comprar agora' : item.type === 'Donation' ? 'Solicitar' : 'Propor troca'}
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  size="large" 
+                  fullWidth 
+                  startIcon={<ChatBubbleOutline />} 
+                  sx={{ 
+                    py: 1.5,
+                    fontSize: "1rem",
+                    fontWeight: 600,
+                    textTransform: "none"
+                  }}
+                >
+                  Enviar mensagem
+                </Button>
+                <Button 
+                  component={Link} 
+                  to="/" 
+                  variant="text" 
+                  fullWidth 
+                  sx={{ 
+                    mt: 1,
+                    textTransform: "none",
+                    fontSize: "0.9rem"
+                  }}
+                >
+                  Ver mais anúncios do vendedor
+                </Button>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Box>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  ID do anúncio: {item.id}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                  Publicado em: {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </Box>
+    </>
   );
 }
