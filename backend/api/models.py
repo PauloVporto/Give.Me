@@ -9,8 +9,11 @@ class Category(models.Model):
     name = models.TextField(unique=True, null=False)
     slug = models.TextField(unique=True, null=False)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        db_table = 'category'
+
+    def __str__(self) -> str:
+        return str(self.name)
 
 
 class City(models.Model):
@@ -18,7 +21,10 @@ class City(models.Model):
     name = models.TextField(null=False)
     state = models.TextField(null=True, blank=True)
 
-    def __str__(self):
+    class Meta:
+        db_table = 'city'
+
+    def __str__(self) -> str:
         return f"{self.name} ({self.state})" if self.state else self.name
 
 
@@ -41,8 +47,11 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table = 'item'
+
     def __str__(self):
-        return self.title
+        return str(self.title)
 
 
 class ItemPhoto(models.Model):
@@ -52,23 +61,27 @@ class ItemPhoto(models.Model):
     url = models.TextField(null=True, blank=True)  # Mantém para compatibilidade com URLs externas
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        db_table = 'item_photo'
+
     def get_url(self):
-        """Retorna a URL da imagem (local ou externa)"""
         if self.image:
             return self.image.url
         return self.url or ''
 
 
 class UserProfile(models.Model):
-    # Ligação 1 para 1 com o User. Se o user for deletado, o perfil também é.
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     photo_url = models.TextField(null=True, blank=True)
     City = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
     Bio = models.CharField(max_length=255, null=True, blank=True)
     notifications_enabled = models.BooleanField(default=True)
 
-    def __str__(self):
+    class Meta:
+        db_table = 'profiles'
+
+    def __str__(self) -> str:
         return f"Profile for {self.user.username}"
 
 
