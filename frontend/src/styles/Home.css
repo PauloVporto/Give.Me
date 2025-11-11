@@ -144,9 +144,9 @@
 /* Products grid */
 .products {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
-  margin-bottom: 5rem;
+  margin-bottom: 5rem; /* espaço pro bottom nav */
 }
 
 .product-card {
@@ -156,9 +156,6 @@
   box-shadow: 0 1px 6px rgba(0,0,0,0.08);
   cursor: pointer;
   transition: transform 0.2s ease;
-  text-decoration: none;
-  color: inherit;
-  display: block; /* image-only link */
 }
 
 .product-card:hover {
@@ -167,68 +164,33 @@
 
 .product-card img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 160px;
   object-fit: cover;
-  display: block;
 }
 
-/* New wrapper: product-item groups image (link) + info below */
-.product-item {
+/* Bottom navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 0.6rem 0;
+  border-top: 1px solid #eee;
+}
+
+.bottom-nav a {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.product-info {
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* align content to left */
-  text-align: left;
-}
-
-.product-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #222;
-  margin: 0 0 0.4rem 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-}
-
-.product-condition {
+  align-items: center;
   font-size: 0.75rem;
   color: #666;
-  margin: 0;
-  text-transform: capitalize;
-  text-align: left;
+  text-decoration: none;
 }
 
-/* status colors */
-.product-condition.status-new {
-  background-color: #e6f6eb; /* light green bg */
-  color: #1f7a2e; /* darker green text */
-  padding: 0.18rem 0.45rem;
-  border-radius: 8px;
-  font-weight: 600;
-}
-.product-condition.status-other {
-  background-color: #fff7e6; /* light yellow bg */
-  color: #8a6b00; /* darker yellow/brown text */
-  padding: 0.18rem 0.45rem;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-/* responsive tweaks for smaller screens */
-@media (max-width: 480px) {
-  .products {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.75rem;
-  }
-  .product-card img {
-    aspect-ratio: 1 / 1;
-  }
+.bottom-nav a.active,
+.bottom-nav a:hover {
+  color: #27ae60;
 }

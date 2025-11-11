@@ -24,17 +24,21 @@ export default function ListItem() {
   const [submitting, setSubmitting] = useState(false);
   const dropRef = useRef(null);
 
-  // Carregar categorias ao montar
+  // Carregar categorias ao montar (usa o cliente axios `api`)
   useEffect(() => {
-    fetch("http://localhost:8000/categories/")
-      .then(res => res.json())
-      .then(data => {
+    let mounted = true;
+    api
+      .get("categories/")
+      .then((res) => {
+        if (!mounted) return;
+        const data = res.data;
         console.log("Categorias carregadas:", data);
-        setCategories(data);
+        setCategories(Array.isArray(data) ? data : data?.results || []);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Erro ao carregar categorias:", err);
       });
+    return () => (mounted = false);
   }, []);
 
   function onFilesSelected(list) {
@@ -76,12 +80,11 @@ export default function ListItem() {
     try {
       setSubmitting(true);
       
-      const categoryObj = categories.find(c => 
-        c.name.toLowerCase() === category.toLowerCase()
-      );
+      // agora `category` contém o id selecionado do <select>
+      const categoryObj = categories.find(c => String(c.id) === String(category));
 
       if (!categoryObj) {
-        alert("Categoria inválida. Escolha: " + categories.map(c => c.name).join(", "));
+        alert("Categoria inválida. Escolha uma das opções do select.");
         setSubmitting(false);
         return;
       }
@@ -259,18 +262,18 @@ export default function ListItem() {
             </div>
             <div>
               <label style={labelStyle}>Category</label>
-              <input
-                placeholder="Ex: Electronics"
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                list="categories-list"
-                style={inputStyle}
-              />
-              <datalist id="categories-list">
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.name} />
+                style={{ ...inputStyle, height: 40 }}
+              >
+                <option value="">Selecione uma categoria</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
-              </datalist>
+              </select>
             </div>
             <div>
               <label style={labelStyle}>Location</label>

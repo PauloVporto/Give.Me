@@ -1,3 +1,4 @@
+// ProductDetail.jsx
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
@@ -8,18 +9,16 @@ import {
   Grid,
   Typography,
   Button,
-  Card,
   CardMedia,
-  CardContent,
   Avatar,
   IconButton,
-  Divider,
   Chip,
   CircularProgress,
 } from "@mui/material";
-import { ArrowBack, Edit, ChatBubbleOutline, Star, LocationOn, Tag as TagIcon } from "@mui/icons-material";
+import { ArrowBack, Edit, LocationOn, ChatBubbleOutline } from "@mui/icons-material";
 import { fullUrl, Navbar } from "./Base";
 
+// Componente SmallImage - Mantido
 function SmallImage({ src, alt, onClick, selected }) {
   return (
     <Box
@@ -51,6 +50,16 @@ export default function ProductDetail() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  
+  // Lógica de autenticação e busca de dados (Mantida)
+  const isAuthenticated = useMemo(() => {
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      return !!token && !!jwtDecode(token);
+    } catch {
+      return false;
+    }
+  }, []);
 
   const currentUserId = useMemo(() => {
     try {
@@ -84,6 +93,10 @@ export default function ProductDetail() {
     return ownerId && String(ownerId) === String(currentUserId);
   }, [item, currentUserId]);
 
+  const handleChatStart = () => {
+    console.log('Starting chat with seller');
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
@@ -95,14 +108,12 @@ export default function ProductDetail() {
   if (!item) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", px: 2 }}>
-        <Card sx={{ p: 2, maxWidth: 400 }}>
-          <CardContent>
-            <Typography variant="h6">Item não encontrado</Typography>
-            <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
-              Voltar
-            </Button>
-          </CardContent>
-        </Card>
+        <Box sx={{ p: 2, maxWidth: 400 }}>
+          <Typography variant="h6">Item não encontrado</Typography>
+          <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
+            Voltar
+          </Button>
+        </Box>
       </Box>
     );
   }
@@ -110,179 +121,221 @@ export default function ProductDetail() {
   const images = (item.images || item.photos || []).map((img) => fullUrl(img));
   const mainImage = images[selectedImage] || images[0] || "/placeholder.png";
 
-  const typeLabel =
-    item.type === "Sell" ? "Disponível para Venda" :
-    item.type === "Donation" ? "Disponível para Doação" : "Disponível para Troca";
-
   return (
     <>
-      <Navbar />
-      <Box sx={{ bgcolor: "background.default" }}>
-        <Grid container spacing={0}>
-          <Grid item xs={12} md={12} lg={12}>
-          <Box sx={{ bgcolor: "background.paper", px: { xs: 2, sm: 3, md: 15 } }}>
-            <Box sx={{ display: "flex", alignItems: "center", py: 2, borderBottom: 1, borderColor: "divider" }}>
-              <IconButton onClick={() => navigate(-1)}>
-                <ArrowBack />
-              </IconButton>
-              <Box sx={{ flex: 1 }} />
-              {isOwner && (
-                <Button component={Link} to={`/edit-item/${item.id}`} startIcon={<Edit />}>
-                  Editar
-                </Button>
-              )}
-            </Box>
-
-            <CardMedia
-              component="img"
-              image={mainImage}
-              alt={item.title}
-              sx={{ 
-                width: "100%", 
-                height: { xs: 350, sm: 450, md: 550 }, 
-                objectFit: "contain", 
-                bgcolor: "grey.100",
-                my: 2,
-                borderRadius: 2
-              }}
-            />
-
-            <Box sx={{ pb: 4 }}>
-              <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap", mb: 2 }}>
-                <Typography variant="overline" color="text.secondary" sx={{ fontSize: "0.75rem" }}>{typeLabel}</Typography>
-                <Chip icon={<TagIcon />} label={item.category_name || "—"} size="small" />
-              </Box>
-
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 2 }}>
-                <Typography variant="h4" sx={{ fontWeight: 500, flex: 1 }}>{item.title}</Typography>
-                <Typography variant="h4" color="primary" fontWeight="bold" sx={{ whiteSpace: "nowrap" }}>
-                  {item.type === "Sell" ? (item.price ? `R$ ${item.price}` : "Preço a combinar") : (item.type === "Donation" ? "Doação" : "Troca")}
-                </Typography>
-              </Box>
-              {item.description && (
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 2, whiteSpace: "pre-line", lineHeight: 1.7 }}>
-                  {item.description}
-                </Typography>
-              )}
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <LocationOn fontSize="small" color="action" />
-                  <Typography variant="body1">{item.city?.name || "—"}</Typography>
-                </Box>
-                <Divider orientation="vertical" flexItem />
-                <Typography variant="body1">Condição: <strong>{item.status === 'new' ? 'Novo' : 'Usado'}</strong></Typography>
-                {item.rating && (
-                  <>
-                    <Divider orientation="vertical" flexItem />
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <Star fontSize="small" sx={{ color: 'gold' }} />
-                      <Typography variant="body1" fontWeight="medium">{Number(item.rating).toFixed(1)}</Typography>
-                    </Box>
-                  </>
+      {/* ⚠️ Nota: A Navbar deve ser fixa ou o Box abaixo deve cobrir a tela inteira (height: 100vh) se você quiser o efeito de coluna lateral fixa */}
+      <Navbar /> 
+      <Box sx={{ bgcolor: "background.default", minHeight: '100vh' }}>
+        <Grid container>
+          
+          {/* Left: Images - md={7} (60% da largura em desktop) */}
+          <Grid item xs={12} md={7}>
+            <Box sx={{ 
+              bgcolor: "background.paper", 
+              borderRight: { md: 1 }, 
+              borderColor: "divider",
+              width: '100%' 
+            }}>
+              
+              {/* Top Bar with Back/Edit */}
+              <Box sx={{ 
+                display: "flex", 
+                alignItems: "center", 
+                p: 2, 
+                borderBottom: { xs: 1, md: 0 }, 
+                borderColor: "divider" 
+              }}>
+                <IconButton onClick={() => navigate(-1)}>
+                  <ArrowBack />
+                </IconButton>
+                <Box sx={{ flex: 1 }} />
+                {isOwner && (
+                  <Button component={Link} to={`/edit-item/${item.id}`} startIcon={<Edit />}>
+                    Editar
+                  </Button>
                 )}
               </Box>
 
-              <Box sx={{ display: "flex", gap: 1.5, mt: 3, flexWrap: "wrap", pb: 2 }}>
+              {/* Main Image Container - Agora com foco na altura/centralização simples */}
+              <Box sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%', 
+                minHeight: { xs: 300, md: 550 }, // Altura mínima para o container
+                p: { xs: 2, md: 4 }, 
+                bgcolor: "#f8f9fa"
+              }}>
+                <CardMedia
+                  component="img"
+                  image={mainImage}
+                  alt={item.title}
+                  sx={{ 
+                    maxWidth: "100%", // Garante que não exceda a largura do contêiner
+                    maxHeight: { xs: 400, md: 650 }, // Limite de altura
+                    height: "auto", 
+                    objectFit: "contain"
+                  }}
+                />
+              </Box>
+
+              {/* Small Image Gallery */}
+              <Box sx={{ display: "flex", gap: 1, p: 2, borderTop: 1, borderColor: "divider", overflowX: "auto" }}>
                 {images.slice(0, 8).map((src, idx) => (
                   <SmallImage key={idx} src={src} alt={`${item.title} ${idx}`} onClick={() => setSelectedImage(idx)} selected={idx === selectedImage} />
                 ))}
               </Box>
             </Box>
-          </Box>
-        </Grid>
+          </Grid>
 
-        <Grid item xs={12} md={12} lg={3}>
-          <Box sx={{ 
-            bgcolor: "background.paper", 
-            minHeight: { md: "100vh" }, 
-            borderLeft: { md: 1 }, 
-            borderColor: "divider",
-            px: { xs: 2, sm: 3 },
-            py: { xs: 3, md: 0 }
-          }}>
+          {/* Right: Details - md={5} (40% da largura em desktop) */}
+          <Grid item xs={12} md={5}>
             <Box sx={{ 
-              position: { xs: "relative", md: "sticky" }, 
-              top: { md: 80 },
-              pt: { md: 3 },
-              pb: 3,
-              zIndex: 10
+              bgcolor: "background.paper", 
+              px: { xs: 2, sm: 3 }, 
+              py: { xs: 3 } 
             }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar 
-                  src={fullUrl(item.owner_avatar || item.user_avatar || item.avatar)} 
-                  alt={item.owner_name || item.username || 'Vendedor'}
-                  sx={{ width: 56, height: 56 }}
-                />
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6">{item.owner_name || item.username || 'Vendedor'}</Typography>
-                  <Typography variant="body2" color="text.secondary">{item.owner_reputation || item.reputation || '—'}</Typography>
+              <Box sx={{ maxWidth: 480, margin: '0 auto' }}> 
+                
+                {/* Title and Header */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>{item.title}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LocationOn fontSize="small" color="action" />
+                        <Typography variant="body2" color="text.secondary">{item.city?.name || item.city || '—'}</Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">•</Typography>
+                      <Typography variant="body2" color="text.secondary">Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}</Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Chip 
+                      label={item.type === 'Sell' ? 'Venda' : item.type === 'Donation' ? 'Doação' : 'Troca'} 
+                      sx={{ 
+                        fontWeight: 600,
+                        bgcolor: '#ecfdf5',
+                        color: '#027B55',
+                        border: '1px solid #caf1e3'
+                      }} 
+                    />
+                  </Box>
+                </Box>
+
+                {/* Description card */}
+                {item.description && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Descrição</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6 }}>
+                      {item.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Small info cards */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                  <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Condição</Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
+                      {item.status === 'new' ? 'Novo' : 'Usado'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Categoria</Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
+                      {item.category_name || item.category || '—'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Exchange interests */}
+                {item.type === 'Trade' && (
+                  <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
+                      {item.exchange_interests ? item.exchange_interests : 'Nenhum interesse de troca especificado'}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Seller info */}
+                <Box sx={{ 
+                  mb: 3, 
+                  bgcolor: '#ecfdf5', 
+                  borderRadius: 2,
+                  overflow: 'hidden'
+                }}>
+                  <Box sx={{ p: 2.5 }}>
+                    <Typography variant="subtitle1" sx={{ 
+                      mb: 2,
+                      color: '#027B55',
+                      fontWeight: 500
+                    }}>
+                      Anunciado por
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <Avatar sx={{ 
+                        bgcolor: '#e6e8ea',
+                        color: '#637381',
+                        width: 48,
+                        height: 48
+                      }}>
+                        {item.user?.name?.[0] || item.user?.[0] || '?'}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {item.user?.name || item.user || '—'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Button
+                      fullWidth
+                      size="large"
+                      variant="contained"
+                      startIcon={<ChatBubbleOutline />}
+                      disabled={!isAuthenticated || isOwner}
+                      onClick={handleChatStart}
+                      sx={{
+                        bgcolor: '#007a55',
+                        '&:hover': {
+                          bgcolor: '#006845'
+                        },
+                        textTransform: 'none',
+                        height: 48
+                      }}
+                    >
+                      Iniciar Conversa
+                    </Button>
+                  </Box>
+                  
+                  <Box sx={{ 
+                    bgcolor: '#ffffff',
+                    borderTop: '1px solid #caf1e3',
+                    p: 2,
+                    textAlign: 'center'
+                  }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      Use nosso chat para negociar com segurança
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Box sx={{ mt: 3, textAlign: 'center' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    ID do anúncio: {item.id}
+                  </Typography>
                 </Box>
               </Box>
-
-              <Divider sx={{ mb: 3 }} />
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Button 
-                  variant="contained" 
-                  size="large" 
-                  fullWidth 
-                  startIcon={<ChatBubbleOutline />} 
-                  sx={{ 
-                    py: 1.5,
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    textTransform: "none"
-                  }}
-                >
-                  {item.type === 'Sell' ? 'Comprar agora' : item.type === 'Donation' ? 'Solicitar' : 'Propor troca'}
-                </Button>
-                <Button 
-                  variant="outlined" 
-                  size="large" 
-                  fullWidth 
-                  startIcon={<ChatBubbleOutline />} 
-                  sx={{ 
-                    py: 1.5,
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    textTransform: "none"
-                  }}
-                >
-                  Enviar mensagem
-                </Button>
-                <Button 
-                  component={Link} 
-                  to="/" 
-                  variant="text" 
-                  fullWidth 
-                  sx={{ 
-                    mt: 1,
-                    textTransform: "none",
-                    fontSize: "0.9rem"
-                  }}
-                >
-                  Ver mais anúncios do vendedor
-                </Button>
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  ID do anúncio: {item.id}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                  Publicado em: {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}
-                </Typography>
-              </Box>
             </Box>
-          </Box>
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
     </>
   );
 }
