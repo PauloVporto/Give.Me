@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.530" timestamp="2025-09-04T16:22:03.183237-03:00" hostname="P-NB32"><testcase classname="api.tests.HealthCheckTest" name="test_health_check" time="0.167"><failure message="ModuleNotFoundError: No module named 'backend.urls'">self = &lt;api.tests.HealthCheckTest testMethod=test_health_check&gt;
+
+    def test_health_check(self):
+        """Test that the health check endpoint returns a healthy status"""
+&gt;       url = reverse('health_check')
+
+backend\api\tests.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\django\urls\base.py:98: in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+.venv\Lib\site-packages\django\urls\resolvers.py:749: in _reverse_with_prefix
+    self._populate()
+.venv\Lib\site-packages\django\urls\resolvers.py:548: in _populate
+    for url_pattern in reversed(self.url_patterns):
+.venv\Lib\site-packages\django\utils\functional.py:47: in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+.venv\Lib\site-packages\django\urls\resolvers.py:718: in url_patterns
+    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
+.venv\Lib\site-packages\django\utils\functional.py:47: in __get__
+    res = instance.__dict__[self.name] = self.func(instance)
+.venv\Lib\site-packages\django\urls\resolvers.py:711: in urlconf_module
+    return import_module(self.urlconf_name)
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.11_3.11.2544.0_x64__qbz5n2kfra8p0\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1204: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'backend.urls', import_ = &lt;function _gcd_import at 0x000002A648B63D80&gt;
+
+&gt;   ???
+E   ModuleNotFoundError: No module named 'backend.urls'
+
+&lt;frozen importlib._bootstrap&gt;:1140: ModuleNotFoundError</failure></testcase></testsuite></testsuites>

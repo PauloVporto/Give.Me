@@ -80,7 +80,7 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PWD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
-        "OPTIONS": {"sslmode": "require"},
+        "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE", "disable")},
         "CONN_MAX_AGE": 60,  
     }
 }

@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cy:run": "cypress run",
+    "cy:open": "cypress open",
+    "report:merge": "mochawesome-merge \\cypress/reports/*.json\\ -o cypress/reports/mocha.json",
+    "report:gen": "marge cypress/reports/mocha.json --reportDir cypress/reports --inline",
+    "report": "npm run report:merge && npm run report:gen"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -23,13 +28,23 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@types/node": "^24.7.2",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
+    "cucumber-html-reporter": "^7.2.0",
+    "cypress": "^15.5.0",
+    "cypress-mochawesome-reporter": "^4.0.2",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "marge": "^1.0.1",
+    "mochawesome": "^7.1.4",
+    "mochawesome-merge": "^5.0.0",
+    "mochawesome-report-generator": "^6.3.0",
+    "start-server-and-test": "^2.1.2",
+    "typescript": "^5.9.3",
     "vite": "^7.1.2"
   }
 }
