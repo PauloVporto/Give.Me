@@ -77,6 +77,7 @@ class UserProfile(models.Model):
     City = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
     Bio = models.CharField(max_length=255, null=True, blank=True)
     notifications_enabled = models.BooleanField(default=True)
+    supabase_user_id = models.UUIDField(unique=True, null=True, blank=True)
 
     class Meta:
         db_table = 'profiles'
