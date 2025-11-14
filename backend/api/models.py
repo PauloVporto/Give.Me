@@ -1,39 +1,36 @@
 import uuid
-
 from django.contrib.auth.models import User
 from django.db import models
 
 
 class Category(models.Model):
-    class Meta:
-        db_table = "category"
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(unique=True, null=False)
     slug = models.TextField(unique=True, null=False)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        db_table = "category"
+
+    def __str__(self) -> str:
+        return str(self.name)
 
 
 class City(models.Model):
-    class Meta:
-        db_table = "city"
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(null=False)
     state = models.TextField(null=True, blank=True)
 
-    def __str__(self):
+    class Meta:
+        db_table = "city"
+
+    def __str__(self) -> str:
         return f"{self.name} ({self.state})" if self.state else self.name
 
 
 class Item(models.Model):
-    class Meta:
-        db_table = "item"
-
     STATUS_CHOICES = [("new", "Novo"), ("used", "Usado")]
     LISTING_STATE_CHOICES = [("active", "Ativo"), ("inactive", "Inativo")]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
     title = models.TextField()
@@ -49,57 +46,58 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        db_table = "item"
+
     def __str__(self):
-        return self.title
+        return str(self.title)
 
 
 class ItemPhoto(models.Model):
-    class Meta:
-        db_table = "itemphoto"
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to='items/%Y/%m/%d/', null=True, blank=True)
-    url = models.TextField(null=True, blank=True)  # Mantém para compatibilidade com URLs externas
+    image = models.ImageField(upload_to="items/%Y/%m/%d/", null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
+    class Meta:
+        db_table = "item_photo"
+
     def get_url(self):
-        """Retorna a URL da imagem (local ou externa)"""
         if self.image:
             return self.image.url
-        return self.url or ''
+        return self.url or ""
 
 
 class UserProfile(models.Model):
-    class Meta:
-        db_table = "userprofile"
-    # Ligação 1 para 1 com o User. Se o user for deletado, o perfil também é.
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     photo_url = models.TextField(null=True, blank=True)
-    City = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
-    Bio = models.CharField(max_length=255, null=True, blank=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
+    bio = models.CharField(max_length=255, null=True, blank=True)
     notifications_enabled = models.BooleanField(default=True)
     supabase_user_id = models.UUIDField(unique=True, null=True, blank=True)
 
-    def __str__(self):
+    class Meta:
+        db_table = "userprofile"   # ← versão mantida
+
+    def __str__(self) -> str:
         return f"Profile for {self.user.username}"
 
 
 class Notification(models.Model):
-    class Meta:
-        db_table = "notification"
     NOTIFICATION_TYPE = [
         ("profile", "Perfil"),
         ("item", "Item"),
         ("system", "Sistema"),
     ]
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notifications"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE)
     reference_id = models.UUIDField(null=True, blank=True)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "notification"

@@ -1,0 +1,134 @@
+/* src/styles/Settings.css */
+
+.settings-panel {
+  margin-top: 16px;
+  width: 100%;              /* ocupa toda a largura do .profile-page */
+}
+
+.settings-section {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.settings-section h3 {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* blocos de itens ocupam mesma largura do container */
+.settings-items {
+  background-color: #f9faf9;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  /* center and allow longer rows (keep responsive) */
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* resto igual ao que já fizemos */
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* increase horizontal padding to ~2.5x for longer visual length */
+  padding: 12px 35px;
+  border-bottom: 1px solid #e8e8e8;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item:hover {
+  background-color: #eef8f0;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  background-color: #e7f4ec;
+  color: #2d9c73;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+  color: #aaa;
+}
+
+.arrow {
+  font-size: 18px;
+  color: #bbb;
+}
+
+/* toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #16a34a;
+}
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* logout alinhado com o resto */
+.logout-btn {
+  background-color: #e7f4ec;
+  color: #2d9c73;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0 0;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.logout-btn:hover {
+  background-color: #d6ecdf;
+}

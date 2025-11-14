@@ -1,17 +1,65 @@
+// ProductDetail.jsx
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
-import { FiStar, FiShield, FiPackage, FiMapPin, FiTag, FiMessageCircle } from "react-icons/fi";
-import "../styles/Detail.css";
-import { BackHeader, BottomNav, fullUrl, LoadingContainer } from "./Base";
+import {
+  Box,
+  Grid,
+  Typography,
+  Button,
+  CardMedia,
+  Avatar,
+  IconButton,
+  Chip,
+  CircularProgress,
+} from "@mui/material";
+import { ArrowBack, Edit, LocationOn, ChatBubbleOutline } from "@mui/icons-material";
+import { fullUrl, Navbar } from "../components/Base";
+
+// Componente SmallImage - Mantido
+function SmallImage({ src, alt, onClick, selected }) {
+  return (
+    <Box
+      component="img"
+      src={src}
+      alt={alt}
+      onClick={onClick}
+      sx={{
+        width: 80,
+        height: 80,
+        objectFit: "cover",
+        borderRadius: 1.5,
+        cursor: "pointer",
+        border: selected ? "3px solid" : "2px solid",
+        borderColor: selected ? "primary.main" : "grey.300",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "primary.main",
+          transform: "scale(1.05)",
+        }
+      }}
+    />
+  );
+}
 
 export default function ProductDetail() {
-  const { slug } = useParams(); // pode ser slug ou id
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+
+  // Lógica de autenticação e busca de dados (Mantida)
+  const isAuthenticated = useMemo(() => {
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      return !!token && !!jwtDecode(token);
+    } catch {
+      return false;
+    }
+  }, []);
 
   const currentUserId = useMemo(() => {
     try {
@@ -31,8 +79,7 @@ export default function ProductDetail() {
         const res = await api.get(`/items/${slug}/`);
         if (mounted) setItem(res.data);
       } catch (e) {
-        console.error("Erro ao buscar item:", e);
-        console.error("Detalhes:", e.response?.data);
+        console.error("Erro ao buscar item:", e.response || e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -46,95 +93,252 @@ export default function ProductDetail() {
     return ownerId && String(ownerId) === String(currentUserId);
   }, [item, currentUserId]);
 
+  const handleChatStart = () => {
+    console.log('Starting chat with seller');
+  };
+
   if (loading) {
     return (
-      <main className="detail-page">
-        <div className="detail-card">
-          <LoadingContainer />
-        </div>
-      </main>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <CircularProgress />
+      </Box>
     );
   }
+
   if (!item) {
     return (
-      <main className="detail-page">
-        <div className="detail-card">
-          <h2>Item não encontrado</h2>
-          <button className="btn" onClick={() => navigate(-1)}>
-            <FiArrowLeft /> Voltar
-          </button>
-        </div>
-      </main>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", px: 2 }}>
+        <Box sx={{ p: 2, maxWidth: 400 }}>
+          <Typography variant="h6">Item não encontrado</Typography>
+          <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mt: 2 }}>
+            Voltar
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
-  const typeLabel =
-    item.type === "Sell" ? "Disponível para Venda" :
-    item.type === "Donation" ? "Disponível para Doação" : "Disponível para Troca";
-
-  const cover = item.images?.[0] || item.photos?.[0];
-  const imageUrl = fullUrl(cover);
+  const images = (item.images || item.photos || []).map((img) => fullUrl(img));
+  const mainImage = images[selectedImage] || images[0] || "/placeholder.png";
 
   return (
-    <main className="detail-page">
-      <article className="detail-card">
-        <BackHeader 
-          rightElement={isOwner && <Link to={`/edit-item/${item.id}`} className="link-edit">Editar</Link>}
-        />
+    <>
+      {/* ⚠️ Nota: A Navbar deve ser fixa ou o Box abaixo deve cobrir a tela inteira (height: 100vh) se você quiser o efeito de coluna lateral fixa */}
+      <Navbar />
+      <Box sx={{ bgcolor: "background.default", minHeight: '100vh' }}>
+        <Grid container>
 
-        <div className="detail-hero">
-          <img 
-            src={imageUrl || "/placeholder.png"} 
-            alt={item.title} 
-            onError={(e) => {
-              console.log('Erro ao carregar imagem:', e);
-              e.currentTarget.src = "/placeholder.png";
-            }}
-          />
-        </div>
+          {/* Left: Images - md={7} (60% da largura em desktop) */}
+          <Grid item xs={12} md={7}>
+            <Box sx={{
+              bgcolor: "background.paper",
+              borderRight: { md: 1 },
+              borderColor: "divider",
+              width: '100%'
+            }}>
 
-        <div className="detail-type">{typeLabel}</div>
-        <h1 className="detail-title">{item.title}</h1>
-        {item.description && <p className="detail-desc">{item.description}</p>}
+              {/* Top Bar with Back/Edit */}
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 2,
+                borderBottom: { xs: 1, md: 0 },
+                borderColor: "divider"
+              }}>
+                <IconButton onClick={() => navigate(-1)}>
+                  <ArrowBack />
+                </IconButton>
+                <Box sx={{ flex: 1 }} />
+                {isOwner && (
+                  <Button component={Link} to={`/edit-item/${item.id}`} startIcon={<Edit />}>
+                    Editar
+                  </Button>
+                )}
+              </Box>
 
-        <div className="detail-badges">
-          <div className="badge-item">
-            <FiTag /> Categoria: {item.category_name || "—"}
-          </div>
-          <div className="badge-item">
-            <FiMapPin /> Localização: {item.city?.name || "—"}
-          </div>
-          <div className="badge-item">
-            <FiPackage /> Condição: {item.status === 'new' ? 'Novo' : 'Usado'}
-          </div>
-          {item.type === "Sell" && (
-            <div className="badge"><FiTag /><span>{item.price ? `R$ ${item.price}` : "Preço a combinar"}</span></div>
-          )}
-        </div>
+              {/* Main Image Container - Agora com foco na altura/centralização simples */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  height: { xs: 350, md: 600 },
+                  overflow: "hidden",
+                  backgroundColor: "#000", // fundo escuro deixa o foco na imagem
+                  borderBottom: "1px solid #222",
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  image={mainImage}
+                  alt={item.title}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover", // preenche o bloco cortando um pouco
+                    borderRadius: 2,
+                  }}
+                />
+              </Box>
 
-        <ul className="detail-specs">
-          <li className="spec-row">
-            <div className="spec-left"><FiPackage /><span>Item Condition</span></div>
-            <div className="spec-right">
-              {item.condition || "—"}
-              {item.rating && <span className="spec-rating"><FiStar /> {Number(item.rating).toFixed(1)}</span>}
-            </div>
-          </li>
-          <li className="spec-row">
-            <div className="spec-left"><FiShield /><span>Donor Reputation</span></div>
-            <div className="spec-right">{item.reputation || "94% (117 reviews)"}</div>
-          </li>
-        </ul>
+              {/* Small Image Gallery */}
+              <Box sx={{ display: "flex", gap: 1, p: 2, borderTop: 1, borderColor: "divider", overflowX: "auto" }}>
+                {images.slice(0, 8).map((src, idx) => (
+                  <SmallImage key={idx} src={src} alt={`${item.title} ${idx}`} onClick={() => setSelectedImage(idx)} selected={idx === selectedImage} />
+                ))}
+              </Box>
+            </Box>
+          </Grid>
 
-        <footer className="detail-actions">
-          <button className="btn btn-primary">
-            {item.type === "Sell" ? "Buy" : item.type === "Donation" ? "Request" : "Propose Trade"}
-          </button>
-          <button className="btn btn-ghost"><FiMessageCircle /> Chat</button>
-        </footer>
-      </article>
+          {/* Right: Details - md={5} (40% da largura em desktop) */}
+          <Grid item xs={12} md={5}>
+            <Box sx={{
+              bgcolor: "background.paper",
+              px: { xs: 2, sm: 3 },
+              py: { xs: 3 }
+            }}>
+              <Box sx={{ maxWidth: 480, margin: '0 auto' }}>
 
-      <BottomNav />
-    </main>
+                {/* Title and Header */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>{item.title}</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <LocationOn fontSize="small" color="action" />
+                        <Typography variant="body2" color="text.secondary">{item.city?.name || item.city || '—'}</Typography>
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">•</Typography>
+                      <Typography variant="body2" color="text.secondary">Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}</Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <Chip
+                      label={item.type === 'Sell' ? 'Venda' : item.type === 'Donation' ? 'Doação' : 'Troca'}
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: '#ecfdf5',
+                        color: '#027B55',
+                        border: '1px solid #caf1e3'
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                {/* Description card */}
+                {item.description && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Descrição</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6 }}>
+                      {item.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Small info cards */}
+                <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                  <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Condição</Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
+                      {item.status === 'new' ? 'Novo' : 'Usado'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
+                    <Typography variant="body2" color="text.secondary">Categoria</Typography>
+                    <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
+                      {item.category_name || item.category || '—'}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Exchange interests */}
+                {item.type === 'Trade' && (
+                  <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
+                      {item.exchange_interests ? item.exchange_interests : 'Nenhum interesse de troca especificado'}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Seller info */}
+                <Box sx={{
+                  mb: 3,
+                  bgcolor: '#ecfdf5',
+                  borderRadius: 2,
+                  overflow: 'hidden'
+                }}>
+                  <Box sx={{ p: 2.5 }}>
+                    <Typography variant="subtitle1" sx={{
+                      mb: 2,
+                      color: '#027B55',
+                      fontWeight: 500
+                    }}>
+                      Anunciado por
+                    </Typography>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <Avatar sx={{
+                        bgcolor: '#e6e8ea',
+                        color: '#637381',
+                        width: 48,
+                        height: 48
+                      }}>
+                        {item.user?.name?.[0] || item.user?.[0] || '?'}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {item.user?.name || item.user || '—'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Button
+                      fullWidth
+                      size="large"
+                      variant="contained"
+                      startIcon={<ChatBubbleOutline />}
+                      disabled={!isAuthenticated || isOwner}
+                      onClick={handleChatStart}
+                      sx={{
+                        bgcolor: '#007a55',
+                        '&:hover': {
+                          bgcolor: '#006845'
+                        },
+                        textTransform: 'none',
+                        height: 48
+                      }}
+                    >
+                      Iniciar Conversa
+                    </Button>
+                  </Box>
+
+                  <Box sx={{
+                    bgcolor: '#ffffff',
+                    borderTop: '1px solid #caf1e3',
+                    p: 2,
+                    textAlign: 'center'
+                  }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      Use nosso chat para negociar com segurança
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ mt: 3, textAlign: 'center' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    ID do anúncio: {item.id}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+    </>
   );
 }

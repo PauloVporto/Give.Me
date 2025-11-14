@@ -36,9 +36,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://localhost:8000
+    - CHOKIDAR_USEPOLLING=true    # força o React/Vite a detectar mudanças
+    - WATCHPACK_POLLING=true      
+    - VITE_API_URL=http://localhost:8000
+    - HOST=0.0.0.0
     depends_on:
       - backend
+    command: npm run dev -- --host 0.0.0.0
 
 volumes:
   media_files:
