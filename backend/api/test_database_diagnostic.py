@@ -48,7 +48,7 @@ class DatabaseDiagnosticTests(TestCase):
                 print(f"   - {table}")
                 
             # Verifica tabelas essenciais
-            essential_tables = ['api_category', 'api_city', 'api_item', 'auth_user']
+            essential_tables = ['category', 'city', 'item', 'auth_user']
             for table in essential_tables:
                 if table in tables:
                     print(f"✅ Tabela {table} existe")
