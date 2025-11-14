@@ -62,7 +62,7 @@ class ItemPhoto(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "item_photo"
+        db_table = "itemphoto"
 
     def get_url(self):
         if self.image:
