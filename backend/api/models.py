@@ -1,4 +1,5 @@
 import uuid
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -56,7 +57,7 @@ class Item(models.Model):
 class ItemPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to="items/%Y/%m/%d/", null=True, blank=True)
+    image = models.ImageField(upload_to="items-%Y-%m-%d-", null=True, blank=True)
     url = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -79,7 +80,7 @@ class UserProfile(models.Model):
     supabase_user_id = models.UUIDField(unique=True, null=True, blank=True)
 
     class Meta:
-        db_table = "userprofile"   # ← versão mantida
+        db_table = "userprofile"  # ← versão mantida
 
     def __str__(self) -> str:
         return f"Profile for {self.user.username}"
@@ -92,7 +93,9 @@ class Notification(models.Model):
         ("system", "Sistema"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE)
     reference_id = models.UUIDField(null=True, blank=True)
     message = models.TextField()
