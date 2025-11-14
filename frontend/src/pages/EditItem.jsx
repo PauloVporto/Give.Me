@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api";
-import { BackHeader, LoadingContainer, inputStyle, labelStyle, buttonStyle, primaryButtonStyle } from "./Base";
+import { BackHeader, LoadingContainer, inputStyle, labelStyle, buttonStyle, primaryButtonStyle } from "../components/Base";
 
 export default function EditItem() {
   const { id } = useParams();

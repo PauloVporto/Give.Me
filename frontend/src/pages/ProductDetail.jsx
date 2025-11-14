@@ -16,7 +16,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { ArrowBack, Edit, LocationOn, ChatBubbleOutline } from "@mui/icons-material";
-import { fullUrl, Navbar } from "./Base";
+import { fullUrl, Navbar } from "../components/Base";
 
 // Componente SmallImage - Mantido
 function SmallImage({ src, alt, onClick, selected }) {
@@ -50,7 +50,7 @@ export default function ProductDetail() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
-  
+
   // Lógica de autenticação e busca de dados (Mantida)
   const isAuthenticated = useMemo(() => {
     try {
@@ -124,26 +124,26 @@ export default function ProductDetail() {
   return (
     <>
       {/* ⚠️ Nota: A Navbar deve ser fixa ou o Box abaixo deve cobrir a tela inteira (height: 100vh) se você quiser o efeito de coluna lateral fixa */}
-      <Navbar /> 
+      <Navbar />
       <Box sx={{ bgcolor: "background.default", minHeight: '100vh' }}>
         <Grid container>
-          
+
           {/* Left: Images - md={7} (60% da largura em desktop) */}
           <Grid item xs={12} md={7}>
-            <Box sx={{ 
-              bgcolor: "background.paper", 
-              borderRight: { md: 1 }, 
+            <Box sx={{
+              bgcolor: "background.paper",
+              borderRight: { md: 1 },
               borderColor: "divider",
-              width: '100%' 
+              width: '100%'
             }}>
-              
+
               {/* Top Bar with Back/Edit */}
-              <Box sx={{ 
-                display: "flex", 
-                alignItems: "center", 
-                p: 2, 
-                borderBottom: { xs: 1, md: 0 }, 
-                borderColor: "divider" 
+              <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 2,
+                borderBottom: { xs: 1, md: 0 },
+                borderColor: "divider"
               }}>
                 <IconButton onClick={() => navigate(-1)}>
                   <ArrowBack />
@@ -157,24 +157,27 @@ export default function ProductDetail() {
               </Box>
 
               {/* Main Image Container - Agora com foco na altura/centralização simples */}
-              <Box sx={{ 
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%', 
-                minHeight: { xs: 300, md: 550 }, // Altura mínima para o container
-                p: { xs: 2, md: 4 }, 
-                bgcolor: "#f8f9fa"
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  height: { xs: 350, md: 600 },
+                  overflow: "hidden",
+                  backgroundColor: "#000", // fundo escuro deixa o foco na imagem
+                  borderBottom: "1px solid #222",
+                }}
+              >
                 <CardMedia
                   component="img"
                   image={mainImage}
                   alt={item.title}
-                  sx={{ 
-                    maxWidth: "100%", // Garante que não exceda a largura do contêiner
-                    maxHeight: { xs: 400, md: 650 }, // Limite de altura
-                    height: "auto", 
-                    objectFit: "contain"
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover", // preenche o bloco cortando um pouco
+                    borderRadius: 2,
                   }}
                 />
               </Box>
@@ -190,13 +193,13 @@ export default function ProductDetail() {
 
           {/* Right: Details - md={5} (40% da largura em desktop) */}
           <Grid item xs={12} md={5}>
-            <Box sx={{ 
-              bgcolor: "background.paper", 
-              px: { xs: 2, sm: 3 }, 
-              py: { xs: 3 } 
+            <Box sx={{
+              bgcolor: "background.paper",
+              px: { xs: 2, sm: 3 },
+              py: { xs: 3 }
             }}>
-              <Box sx={{ maxWidth: 480, margin: '0 auto' }}> 
-                
+              <Box sx={{ maxWidth: 480, margin: '0 auto' }}>
+
                 {/* Title and Header */}
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
                   <Box sx={{ flex: 1 }}>
@@ -211,14 +214,14 @@ export default function ProductDetail() {
                     </Box>
                   </Box>
                   <Box>
-                    <Chip 
-                      label={item.type === 'Sell' ? 'Venda' : item.type === 'Donation' ? 'Doação' : 'Troca'} 
-                      sx={{ 
+                    <Chip
+                      label={item.type === 'Sell' ? 'Venda' : item.type === 'Donation' ? 'Doação' : 'Troca'}
+                      sx={{
                         fontWeight: 600,
                         bgcolor: '#ecfdf5',
                         color: '#027B55',
                         border: '1px solid #caf1e3'
-                      }} 
+                      }}
                     />
                   </Box>
                 </Box>
@@ -260,23 +263,23 @@ export default function ProductDetail() {
                 )}
 
                 {/* Seller info */}
-                <Box sx={{ 
-                  mb: 3, 
-                  bgcolor: '#ecfdf5', 
+                <Box sx={{
+                  mb: 3,
+                  bgcolor: '#ecfdf5',
                   borderRadius: 2,
                   overflow: 'hidden'
                 }}>
                   <Box sx={{ p: 2.5 }}>
-                    <Typography variant="subtitle1" sx={{ 
+                    <Typography variant="subtitle1" sx={{
                       mb: 2,
                       color: '#027B55',
                       fontWeight: 500
                     }}>
                       Anunciado por
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                      <Avatar sx={{ 
+                      <Avatar sx={{
                         bgcolor: '#e6e8ea',
                         color: '#637381',
                         width: 48,
@@ -313,8 +316,8 @@ export default function ProductDetail() {
                       Iniciar Conversa
                     </Button>
                   </Box>
-                  
-                  <Box sx={{ 
+
+                  <Box sx={{
                     bgcolor: '#ffffff',
                     borderTop: '1px solid #caf1e3',
                     p: 2,
@@ -325,7 +328,7 @@ export default function ProductDetail() {
                     </Typography>
                   </Box>
                 </Box>
-                
+
                 <Box sx={{ mt: 3, textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary">
                     ID do anúncio: {item.id}

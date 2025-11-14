@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Box, Stack, Chip, Typography, Card, CardMedia, CardContent, CardActionArea } from "@mui/material";
 import api from "../api";
-import { Navbar, fullUrl, LoadingContainer, EmptyState } from "./Base";
+import { Navbar, fullUrl, LoadingContainer, EmptyState } from "../components/Base";
 
 export default function Home() {
   const [items, setItems] = useState([]);
