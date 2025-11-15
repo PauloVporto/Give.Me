@@ -45,7 +45,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["photo_url", "City", "Bio", "notifications_enabled"]
+        fields = ["photo_url", "city", "bio", "notifications_enabled"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -110,7 +110,9 @@ class UserSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name", read_only=True)
     city = CitySerializer(read_only=True)
-    city_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    #city_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    city_name = serializers.CharField(write_only=True, required=False)
+    city_state = serializers.CharField(write_only=True, required=False)
     photos = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     type = serializers.CharField(write_only=True, required=False, default="Trade")
@@ -127,7 +129,8 @@ class ItemSerializer(serializers.ModelSerializer):
             "category",
             "category_name",
             "city",
-            "city_id",
+            "city_name",
+            "city_state",
             "status",
             "listing_state",
             "created_at",
@@ -144,19 +147,30 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         return self.get_photos(obj)
+    
 
     def create(self, validated_data):
         uploaded_photos = validated_data.pop("uploaded_photos", [])
         validated_data.pop("type", None)
-        city_id = validated_data.pop("city_id", None)
+        #city_id = validated_data.pop("city_id", None)
 
-        if city_id:
-            try:
-                validated_data["city"] = City.objects.get(id=city_id)
-            except City.DoesNotExist:
-                validated_data["city"] = None
-        else:
-            validated_data.pop("city", None)
+        # if city_id:
+        #     try:
+        #         validated_data["city"] = City.objects.get(id=city_id)
+        #     except City.DoesNotExist:
+        #         validated_data["city"] = None
+        # else:
+        #     validated_data.pop("city", None)
+
+        city_name = validated_data.pop("city_name", None)
+        city_state = validated_data.pop("city_state", None)
+
+        if city_name and city_state:
+            city, created = City.objects.get_or_create(
+                name=city_name,
+                state=city_state
+            )
+            validated_data["city"] = city
 
         item = Item.objects.create(**validated_data)
 

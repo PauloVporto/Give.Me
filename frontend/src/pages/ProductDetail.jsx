@@ -207,7 +207,7 @@ export default function ProductDetail() {
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <LocationOn fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">{item.city?.name || item.city || '—'}</Typography>
+                        <Typography variant="body2" color="text.secondary">{item.city ? `${item.city.name} - ${item.city.state}` : '—'}</Typography>
                       </Box>
                       <Typography variant="body2" color="text.secondary">•</Typography>
                       <Typography variant="body2" color="text.secondary">Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}</Typography>

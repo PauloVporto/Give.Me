@@ -76,9 +76,10 @@ class ReadItemView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        user = self.request.user
-        return Item.objects.filter(user=user)
-    
+    #     user = self.request.user
+    #     return Item.objects.filter(user=user)
+        return Item.objects.all()
+
 class ReadItemsView(generics.ListAPIView):
     name = "Read Items"
     http_method_names = ["get"]

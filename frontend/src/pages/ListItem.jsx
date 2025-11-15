@@ -102,7 +102,15 @@ export default function ListItem() {
       formData.append('listing_state', 'active');
       
       if (location) {
-        formData.append('city', location);
+        const parts = location.split(",");
+
+        if (parts.length === 2) {
+          const cityName = parts[0].trim();
+          const cityState = parts[1].trim();
+
+          formData.append("city_name", cityName);
+          formData.append("city_state", cityState);
+        }
       }
       
       files.forEach((file) => {
