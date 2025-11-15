@@ -74,8 +74,10 @@ class ItemPhoto(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     photo_url = models.TextField(null=True, blank=True)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True, blank=True)
-    bio = models.CharField(max_length=255, null=True, blank=True)
+    city = models.ForeignKey(
+        City, on_delete=models.SET_NULL, null=True, blank=True, db_column="city_id"
+    )
+    bio = models.CharField(max_length=255, null=True, blank=True, db_column="bio")
     notifications_enabled = models.BooleanField(default=True)
     supabase_user_id = models.UUIDField(unique=True, null=True, blank=True)
 
