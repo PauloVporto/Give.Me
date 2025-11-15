@@ -45,7 +45,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["photo_url", "City", "Bio", "notifications_enabled"]
+        fields = ["photo_url", "city", "bio", "notifications_enabled"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
