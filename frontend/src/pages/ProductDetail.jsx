@@ -119,7 +119,13 @@ export default function ProductDetail() {
   }
 
   const images = (item.images || item.photos || []).map((img) => fullUrl(img));
-  const mainImage = images[selectedImage] || images[0] || "/placeholder.png";
+  const placeholder = "/ImagEtc/SemFoto.png"; // coloque aqui sua imagem padrão
+
+  const mainImage =
+    images.length > 0
+      ? images[selectedImage] || images[0]
+      : placeholder;
+ 
 
   return (
     <>

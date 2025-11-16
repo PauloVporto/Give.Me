@@ -116,6 +116,7 @@ class ItemSerializer(serializers.ModelSerializer):
     photos = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     type = serializers.CharField(write_only=True, required=False, default="Trade")
+    user = serializers.CharField(source="user.first_name", read_only=True)
     uploaded_photos = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
@@ -125,6 +126,7 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "user",
             "description",
             "category",
             "category_name",
@@ -147,7 +149,6 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         return self.get_photos(obj)
-    
 
     def create(self, validated_data):
         uploaded_photos = validated_data.pop("uploaded_photos", [])

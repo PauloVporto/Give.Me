@@ -7,6 +7,7 @@ from .views import (
     ListCitiesView,
     UserProfileUpdateView,
     UserProfileView,
+    SearchItemView,
     delete_item_photo,
     upload_item_photos,
 )
@@ -24,4 +25,5 @@ urlpatterns = [
     path("categories/", ListCategoriesView.as_view(), name="list-categories"),
     path("categories/create/", CreateCategoryView.as_view(), name="create-category"),
     path("cities/", ListCitiesView.as_view(), name="list-cities"),
+    path('search-items/', SearchItemView.as_view(), name='search-items'),
 ]

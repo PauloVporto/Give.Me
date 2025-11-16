@@ -3,6 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import filters
 
 from .models import Category, City, Item, ItemPhoto, UserProfile
 from .serializers import (
@@ -143,6 +144,12 @@ class ListCitiesView(generics.ListAPIView):
     serializer_class = CitySerializer
     permission_classes = [AllowAny]
 
+class SearchItemView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+    queryset = Item.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title']
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -192,6 +199,7 @@ def upload_item_photos(request, item_id):
     }, status=status.HTTP_201_CREATED)
 
 
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_item_photo(request, photo_id):
@@ -207,3 +215,6 @@ def delete_item_photo(request, photo_id):
             {"error": "Foto não encontrada ou você não tem permissão."},
             status=status.HTTP_404_NOT_FOUND
         )
+    
+
+
