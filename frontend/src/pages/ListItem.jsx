@@ -20,6 +20,7 @@ export default function ListItem() {
   const [location, setLocation] = useState("");       // (não usado no backend - usar city)
   const [price, setPrice] = useState("");             // (não usado no backend - modelo não tem campo price)
   const [files, setFiles] = useState([]);             // (não usado no backend - modelo ItemPhoto existe mas não está implementado)
+  const [tradeInterest, setTradeInterest] = useState(""); // Campo para interesse de troca
   
   const [submitting, setSubmitting] = useState(false);
   const dropRef = useRef(null);
@@ -101,6 +102,11 @@ export default function ListItem() {
       formData.append('status', mapConditionToStatus(condition));
       formData.append('type', mapType(type));
       formData.append('listing_state', 'active');
+      
+      // Adicionar interesse de troca se o tipo for "trade"
+      if (type === "trade" && tradeInterest.trim()) {
+        formData.append('trade_interest', tradeInterest.trim());
+      }
       
       if (location) {
         const parts = location.split(",");
@@ -300,14 +306,36 @@ export default function ListItem() {
             <label style={labelStyle}>Tipo de Anúncio</label>
             <Segmented
               value={type}
-              onChange={setType}
+              onChange={(value) => {
+                setType(value);
+                if (value !== "trade") {
+                  setTradeInterest(""); // Limpa o campo se não for troca
+                }
+              }}
               options={[
                 { value: "sell", label: "Venda" },
-                { value: "donation", label: "Doação" },
                 { value: "trade", label: "Troca" },
+                { value: "donation", label: "Doação" },
               ]}
             />
           </div>
+
+          {/* Campo de interesse de troca - aparece apenas quando type === "trade" */}
+          {type === "trade" && (
+            <div style={{ marginTop: 16 }}>
+              <label style={labelStyle}>O que você aceita em troca?</label>
+              <textarea
+                rows={3}
+                placeholder="Ex: Bicicleta aro 26, notebook usado, ou qualquer eletrônico"
+                value={tradeInterest}
+                onChange={(e) => setTradeInterest(e.target.value)}
+                style={{ ...inputStyle, resize: "vertical", marginTop: 8 }}
+              />
+              <small style={{ color: "#666", fontSize: 12, display: "block", marginTop: 4 }}>
+                Descreva o que você tem interesse em receber como troca por este item
+              </small>
+            </div>
+          )}
 
           {type === "sell" && (
             <div style={{ marginTop: 12, maxWidth: 280 }}>

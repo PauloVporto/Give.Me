@@ -50,6 +50,7 @@ export default function Home() {
         const { data } = await api.get("/items/");
         const list = Array.isArray(data) ? data : (data?.results || []);
         if (mounted) {
+          console.log("Itens carregados:", list.map(item => ({ title: item.title, type: item.type })));
           setAllItems(list);
           setItems(list);
         }
@@ -79,8 +80,7 @@ export default function Home() {
     // Filtrar por tipo (Todos, Trocas, Doações)
     if (typeName !== "Todos") {
       filtered = filtered.filter(item => {
-        const itemType = (item.type || "").toString();
-        console.log('Item:', item.title, 'Type:', itemType, 'Buscando:', typeName);
+        const itemType = (item.type || "").trim();
         if (typeName === "Trocas") return itemType === "Trade";
         if (typeName === "Doações") return itemType === "Donation";
         return false;

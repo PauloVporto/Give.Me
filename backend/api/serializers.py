@@ -139,6 +139,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "photos",
             "images",
             "type",
+            "trade_interest",
             "uploaded_photos",
         ]
         read_only_fields = ["user", "id", "created_at", "updated_at", "city"]
@@ -151,7 +152,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         uploaded_photos = validated_data.pop("uploaded_photos", [])
-        validated_data.pop("type", None)
+        # Não remover type - ele deve ser salvo no banco
         #city_id = validated_data.pop("city_id", None)
 
         # if city_id:

@@ -252,7 +252,7 @@ export default function ProductDetail() {
               <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
-                  {item.exchange_interests ? item.exchange_interests : 'Nenhum interesse de troca especificado'}
+                  {item.trade_interest ? item.trade_interest : 'Nenhum interesse de troca especificado'}
                 </Typography>
               </Box>
             )}
@@ -393,7 +393,7 @@ export default function ProductDetail() {
               <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
-                  {item.exchange_interests ? item.exchange_interests : 'Nenhum interesse de troca especificado'}
+                  {item.trade_interest ? item.trade_interest : 'Nenhum interesse de troca especificado'}
                 </Typography>
               </Box>
             )}
