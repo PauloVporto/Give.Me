@@ -23,8 +23,15 @@ COPY . .
 
 RUN mkdir -p /app/staticfiles /app/media
 
-RUN chmod +x /app/docker-entrypoint.sh
+RUN printf '#!/bin/bash\n\
+set -e\n\
+echo "Running database migrations..."\n\
+python manage.py migrate --noinput\n\
+echo "Collecting static files..."\n\
+python manage.py collectstatic --noinput || true\n\
+echo "Starting Gunicorn server..."\n\
+exec gunicorn backend.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 --access-logfile - --error-logfile -\n' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 8000
 
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
