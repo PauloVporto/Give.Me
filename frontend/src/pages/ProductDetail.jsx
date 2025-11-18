@@ -280,11 +280,11 @@ export default function ProductDetail() {
                     width: 48,
                     height: 48
                   }}>
-                    {item.user?.name?.[0] || item.user?.[0] || '?'}
+                    {item.user_name?.[0] || item.user?.[0] || '?'}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {item.user?.name || item.user || '—'}
+                      {item.user_name || '—'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}
@@ -421,11 +421,11 @@ export default function ProductDetail() {
                     width: 48,
                     height: 48
                   }}>
-                    {item.user?.name?.[0] || item.user?.[0] || '?'}
+                    {item.user_name?.[0] || item.user?.[0] || '?'}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {item.user?.name || item.user || '—'}
+                      {item.user_name || '—'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}

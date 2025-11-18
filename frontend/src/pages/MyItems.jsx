@@ -18,15 +18,28 @@ export default function MyItems() {
   const fetchMyItems = async () => {
     try {
       setLoading(true);
+      
+      // Decodificar o token JWT para obter o user_id
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Token não encontrado");
+        return;
+      }
+      
+      // Decodificar payload do JWT (formato: header.payload.signature)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentUserId = payload.user_id;
+      
+      console.log("User ID do token:", currentUserId);
+      
+      // Buscar todos os itens
       const { data } = await api.get("/items/");
       
       // Filtrar apenas itens do usuário logado
-      // Assumindo que o backend retorna apenas os itens do usuário ou temos o user_id
-      // Por enquanto, vou buscar o user atual e filtrar
-      const userResponse = await api.get("/user/");
-      const currentUserId = userResponse.data.id;
-      
       const myItems = data.filter(item => item.user === currentUserId);
+      
+      console.log("Meus itens filtrados:", myItems.length);
+      
       setItems(myItems);
     } catch (error) {
       console.error("Erro ao buscar meus itens:", error);
@@ -38,7 +51,7 @@ export default function MyItems() {
   const handleDelete = async (itemId) => {
     if (window.confirm("Tem certeza que deseja excluir este item?")) {
       try {
-        await api.delete(`/items/${itemId}/`);
+        await api.delete(`/items/delete/${itemId}/`);
         // Atualizar lista removendo o item deletado
         setItems(items.filter(item => item.id !== itemId));
       } catch (error) {

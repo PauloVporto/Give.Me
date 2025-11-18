@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaUserEdit,
   FaPlusCircle,
@@ -15,6 +16,13 @@ import "../styles/Settings.css";
 
 export default function SettingsPanel() {
   const [notifications, setNotifications] = useState(true);
+  const navigate = useNavigate();
+
+  const handleItemClick = (path) => {
+    if (path) {
+      navigate(path);
+    }
+  };
 
   const sections = [
     {
@@ -23,17 +31,20 @@ export default function SettingsPanel() {
         { 
           icon: <FaUserEdit />, 
           label: "Editar Perfil",
-          description: "Atualize suas informações pessoais e foto de perfil"
+          description: "Atualize suas informações pessoais e foto de perfil",
+          path: "/profile"
         },
         { 
           icon: <FaPlusCircle />, 
           label: "Adicionar Item",
-          description: "Cadastre novos itens para compartilhar"
+          description: "Cadastre novos itens para compartilhar",
+          path: "/create-item"
         },
         { 
           icon: <FaListAlt />, 
           label: "Meus Itens",
-          description: "Veja e gerencie seus anúncios ativos"
+          description: "Veja e gerencie seus anúncios ativos",
+          path: "/my-items"
         },
       ],
     },
@@ -88,7 +99,11 @@ export default function SettingsPanel() {
             <h3 className="column-title">{section.title}</h3>
             <div className="settings-items">
               {section.items.map((item) => (
-                <div key={item.label} className="settings-item">
+                <div 
+                  key={item.label} 
+                  className="settings-item"
+                  onClick={() => handleItemClick(item.path)}
+                >
                   <div className="item-left">
                     <div className="icon">{item.icon}</div>
                     <div className="item-content">
@@ -98,7 +113,7 @@ export default function SettingsPanel() {
                   </div>
                   <div className="item-right">
                     {item.type === "toggle" ? (
-                      <label className="switch">
+                      <label className="switch" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           checked={notifications}
@@ -118,7 +133,9 @@ export default function SettingsPanel() {
       </div>
 
       <div className="settings-footer">
-        <button className="logout-btn">Sair da Conta</button>
+        <button className="logout-btn" onClick={() => navigate("/logout")}>
+          Sair da Conta
+        </button>
       </div>
     </div>
   );
