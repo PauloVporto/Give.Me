@@ -115,7 +115,6 @@ class ItemSerializer(serializers.ModelSerializer):
     city_state = serializers.CharField(write_only=True, required=False)
     photos = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
-    type = serializers.CharField(write_only=True, required=False, default="Trade")
     user = serializers.CharField(source="user.first_name", read_only=True)
     uploaded_photos = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False

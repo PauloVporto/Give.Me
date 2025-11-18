@@ -99,6 +99,7 @@ export default function ListItem() {
       formData.append('description', desc);
       formData.append('category', categoryObj.id);
       formData.append('status', mapConditionToStatus(condition));
+      formData.append('type', mapType(type));
       formData.append('listing_state', 'active');
       
       if (location) {

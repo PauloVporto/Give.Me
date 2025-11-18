@@ -31,11 +31,13 @@ class City(models.Model):
 class Item(models.Model):
     STATUS_CHOICES = [("new", "Novo"), ("used", "Usado")]
     LISTING_STATE_CHOICES = [("active", "Ativo"), ("inactive", "Inativo")]
+    TYPE_CHOICES = [("Sell", "Venda"), ("Donation", "Doação"), ("Trade", "Troca")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
     title = models.TextField()
     description = models.TextField(null=True, blank=True)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Sell")
     category = models.ForeignKey(
         Category, on_delete=models.PROTECT, related_name="items"
     )
