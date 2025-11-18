@@ -25,6 +25,7 @@ RUN mkdir -p /app/staticfiles /app/media
 
 RUN printf '#!/bin/bash\n\
 set -e\n\
+cd /app\n\
 echo "Running database migrations..."\n\
 python manage.py migrate --noinput\n\
 echo "Collecting static files..."\n\
