@@ -23,11 +23,8 @@ COPY . .
 
 RUN mkdir -p /app/staticfiles /app/media
 
-# Copy and set permissions for entrypoint script
-COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
 EXPOSE 8000
 
-# Use the entrypoint script
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
