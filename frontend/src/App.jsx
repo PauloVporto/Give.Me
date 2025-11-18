@@ -44,6 +44,7 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
+import MyItems from "./pages/MyItems";
 
 import "./styles/global.css";
 
@@ -108,6 +109,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-items"
+          element={
+            <ProtectedRoute>
+              <MyItems />
             </ProtectedRoute>
           }
         />

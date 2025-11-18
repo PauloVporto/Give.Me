@@ -2,7 +2,7 @@ name: Frontend E2E (Cypress)
 
 on:
   push:
-    branches: [ main, Tests, Postman ]
+    branches: [ main, Tests, Postman, Front_Kawan]
   pull_request:
     branches: [ main, Tests ]
 
