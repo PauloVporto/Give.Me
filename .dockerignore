@@ -50,8 +50,6 @@ docker-compose*.yml
 
 # Ambiente
 .env
-.env.*
-!.env.example
 
 # Sistema
 .DS_Store
