@@ -22,6 +22,9 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
 }
 
 SIMPLE_JWT = {
@@ -49,7 +52,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # CSRF desabilitado para API REST com JWT - mantenha ativo apenas se usar sessões
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -121,9 +125,28 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "https://give-me.vercel.app",
-    "https://*.vercel.app",  # Para preview deployments
     "http://localhost:3000",
 ]
+
+# Permitir todos os subdomínios do Vercel para preview deployments
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
+
+# CSRF Trusted Origins - necessário para requisições cross-origin com CSRF
+CSRF_TRUSTED_ORIGINS = [
+    "https://give-me.vercel.app",
+    "https://*.vercel.app",
+    "http://localhost:3000",
+]
+
+CSRF_COOKIE_SECURE = not DEBUG  # True em produção
+CSRF_COOKIE_HTTPONLY = False  # False para permitir JavaScript acessar
+CSRF_COOKIE_SAMESITE = (
+    "None" if not DEBUG else "Lax"
+)  # None para cross-origin em produção
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
 
 
 if any("pytest" in arg for arg in sys.argv):
