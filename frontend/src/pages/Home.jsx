@@ -1,7 +1,7 @@
 import "../styles/Home.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Box, Stack, Chip, Typography, Card, CardMedia, CardContent, CardActionArea } from "@mui/material";
+import { Box, Stack, Chip, Typography, Card, CardMedia, CardContent, CardActionArea, IconButton } from "@mui/material";
 import { 
   Inventory as AllIcon,
   Laptop as ElectronicsIcon, 
@@ -11,9 +11,12 @@ import {
   Home as HomeIcon,
   Smartphone as PhoneIcon,
   Toys as ToysIcon,
-  Build as ToolsIcon
+  Build as ToolsIcon,
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon
 } from "@mui/icons-material";
 import api from "../api";
+import { ACCESS_TOKEN } from "../constants";
 import { Navbar, fullUrl, LoadingContainer, EmptyState } from "../components/Base";
 
 // Mapeamento de ícones por categoria
@@ -40,6 +43,7 @@ export default function Home() {
   const [selectedType, setSelectedType] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearch] = useState("");
+  const [favoritedItems, setFavoritedItems] = useState(new Set());
 
 
   useEffect(() => {
@@ -64,6 +68,20 @@ export default function Home() {
           }
         } catch (catError) {
           console.error("categories fetch", catError);
+        }
+
+        // Buscar favoritos do usuário (se autenticado)
+        try {
+          const token = localStorage.getItem(ACCESS_TOKEN);
+          if (token) {
+            const { data: favoritesData } = await api.get("/favorites/");
+            const favoriteIds = new Set(favoritesData.map(fav => fav.item.id));
+            if (mounted) {
+              setFavoritedItems(favoriteIds);
+            }
+          }
+        } catch (favError) {
+          console.error("favorites fetch", favError);
         }
       } catch (e) {
         console.error("home fetch", e);
@@ -142,6 +160,40 @@ const handleSearch = (value) => {
 
   setItems(filtered);
 };
+
+  const toggleFavorite = async (e, itemId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    if (!token) {
+      alert("Você precisa fazer login para favoritar itens");
+      return;
+    }
+
+    try {
+      if (favoritedItems.has(itemId)) {
+        // Remover dos favoritos
+        await api.delete(`/favorites/remove/${itemId}/`);
+        setFavoritedItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      } else {
+        // Adicionar aos favoritos
+        await api.post("/favorites/add/", { item_id: itemId });
+        setFavoritedItems(prev => new Set([...prev, itemId]));
+      }
+    } catch (error) {
+      console.error("Erro ao favoritar:", error);
+      if (error.response?.status === 401) {
+        alert("Você precisa fazer login para favoritar itens");
+      } else {
+        alert("Erro ao favoritar item");
+      }
+    }
+  };
 
   return (
     <div className="home">
@@ -274,7 +326,28 @@ const handleSearch = (value) => {
 
             return (
               <Box key={it.id} className="product-item">
-                <Card sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)' }}>
+                <Card sx={{ borderRadius: 2, boxShadow: '0 1px 6px rgba(0,0,0,0.08)', position: 'relative' }}>
+                  {/* Botão de favorito */}
+                  <IconButton
+                    onClick={(e) => toggleFavorite(e, it.id)}
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      bgcolor: 'rgba(255, 255, 255, 0.9)',
+                      zIndex: 1,
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 1)',
+                      }
+                    }}
+                  >
+                    {favoritedItems.has(it.id) ? (
+                      <FavoriteIcon sx={{ color: '#e74c3c', fontSize: 24 }} />
+                    ) : (
+                      <FavoriteBorderIcon sx={{ color: '#666', fontSize: 24 }} />
+                    )}
+                  </IconButton>
+
                   <CardActionArea component={Link} to={`/product/${slugOrId}`}>
                     <CardMedia
                       component="img"

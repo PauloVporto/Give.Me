@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .models import Category, City, Item, ItemPhoto, Notification, UserProfile
+from .models import Category, City, Item, ItemPhoto, Notification, UserProfile, Favorite
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -179,3 +179,17 @@ class ItemSerializer(serializers.ModelSerializer):
             ItemPhoto.objects.create(item=item, image=photo, position=index)
 
         return item
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    item = ItemSerializer(read_only=True)
+    item_id = serializers.UUIDField(write_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ["id", "item", "item_id", "created_at"]
+        read_only_fields = ["id", "created_at"]
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)

@@ -45,6 +45,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
 import MyItems from "./pages/MyItems";
+import Favorites from "./pages/Favorites";
 
 import "./styles/global.css";
 
@@ -117,6 +118,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MyItems />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <Favorites />
             </ProtectedRoute>
           }
         />

@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import filters
 
-from .models import Category, City, Item, ItemPhoto, UserProfile
+from .models import Category, City, Item, ItemPhoto, UserProfile, Favorite
 from .serializers import (
     CategorySerializer,
     CitySerializer,
@@ -14,6 +14,7 @@ from .serializers import (
     UserCreateSerializer,
     UserProfileSerializer,
     UserSerializer,
+    FavoriteSerializer,
 )
 
 
@@ -215,6 +216,70 @@ def delete_item_photo(request, photo_id):
             {"error": "Foto não encontrada ou você não tem permissão."},
             status=status.HTTP_404_NOT_FOUND
         )
-    
 
+
+# Favoritos Views
+class ListFavoritesView(generics.ListAPIView):
+    """Lista todos os favoritos do usuário autenticado"""
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+class AddFavoriteView(generics.CreateAPIView):
+    """Adiciona um item aos favoritos"""
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def create(self, request, *args, **kwargs):
+        item_id = request.data.get('item_id')
+        
+        # Verificar se já existe
+        existing_favorite = Favorite.objects.filter(
+            user=request.user, 
+            item_id=item_id
+        ).first()
+        
+        if existing_favorite:
+            # Retornar o favorito existente ao invés de erro
+            serializer = self.get_serializer(existing_favorite)
+            return Response(
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        
+        # Criar novo favorito
+        return super().create(request, *args, **kwargs)
+
+
+class RemoveFavoriteView(generics.DestroyAPIView):
+    """Remove um item dos favoritos"""
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+    
+    def delete(self, request, item_id):
+        try:
+            favorite = Favorite.objects.get(user=request.user, item_id=item_id)
+            favorite.delete()
+            return Response(
+                {"message": "Item removido dos favoritos."},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Favorite.DoesNotExist:
+            return Response(
+                {"error": "Favorito não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_favorite(request, item_id):
+    """Verifica se um item está nos favoritos do usuário"""
+    is_favorited = Favorite.objects.filter(user=request.user, item_id=item_id).exists()
+    return Response({"is_favorited": is_favorited})
 

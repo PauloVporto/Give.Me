@@ -10,6 +10,10 @@ from .views import (
     SearchItemView,
     delete_item_photo,
     upload_item_photos,
+    ListFavoritesView,
+    AddFavoriteView,
+    RemoveFavoriteView,
+    check_favorite,
 )
 
 urlpatterns = [
@@ -26,4 +30,9 @@ urlpatterns = [
     path("categories/create/", CreateCategoryView.as_view(), name="create-category"),
     path("cities/", ListCitiesView.as_view(), name="list-cities"),
     path('search-items/', SearchItemView.as_view(), name='search-items'),
+    # Favoritos
+    path("favorites/", ListFavoritesView.as_view(), name="list-favorites"),
+    path("favorites/add/", AddFavoriteView.as_view(), name="add-favorite"),
+    path("favorites/remove/<uuid:item_id>/", RemoveFavoriteView.as_view(), name="remove-favorite"),
+    path("favorites/check/<uuid:item_id>/", check_favorite, name="check-favorite"),
 ]
