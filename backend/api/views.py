@@ -61,7 +61,7 @@ class DeleteItemView(generics.DestroyAPIView):
 
 class UpdateItemView(generics.UpdateAPIView):
     name = "Update Item"
-    http_method_names = ["put", "patch"]
+    http_method_names = ["put", "patch", "get"]
     description = "Endpoint for updating an item."
     serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
@@ -91,6 +91,17 @@ class ReadItemsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Item.objects.all()
+
+class MyItemsView(generics.ListAPIView):
+    name = "My Items"
+    http_method_names = ["get"]
+    description = "Endpoint for reading items of authenticated user."
+    serializer_class = ItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Item.objects.filter(user=user).order_by('-created_at')
     
 class UserProfileView(generics.RetrieveAPIView):
     serializer_class = UserSerializer

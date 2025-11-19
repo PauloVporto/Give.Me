@@ -19,28 +19,12 @@ export default function MyItems() {
     try {
       setLoading(true);
       
-      // Decodificar o token JWT para obter o user_id
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        console.error("Token não encontrado");
-        return;
-      }
+      // Usar a nova API que já filtra automaticamente
+      const { data } = await api.get("/items/my-items/");
       
-      // Decodificar payload do JWT (formato: header.payload.signature)
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentUserId = payload.user_id;
+      console.log("Meus itens da API:", data.length);
       
-      console.log("User ID do token:", currentUserId);
-      
-      // Buscar todos os itens
-      const { data } = await api.get("/items/");
-      
-      // Filtrar apenas itens do usuário logado
-      const myItems = data.filter(item => item.user === currentUserId);
-      
-      console.log("Meus itens filtrados:", myItems.length);
-      
-      setItems(myItems);
+      setItems(Array.isArray(data) ? data : (data?.results || []));
     } catch (error) {
       console.error("Erro ao buscar meus itens:", error);
     } finally {
@@ -80,9 +64,9 @@ export default function MyItems() {
   return (
     <>
       <Navbar />
-      <div className="my-items">
+      <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600, mb: 1, color: '#1a1a1a' }}>
             Meus Itens
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -98,18 +82,39 @@ export default function MyItems() {
               onClick={() => filterByType("Todos")}
               color={selectedType === "Todos" ? "success" : "default"}
               variant={selectedType === "Todos" ? "filled" : "outlined"}
+              sx={{
+                bgcolor: selectedType === "Todos" ? '#009970' : 'transparent',
+                color: selectedType === "Todos" ? '#fff' : 'inherit',
+                '&:hover': {
+                  bgcolor: selectedType === "Todos" ? '#007a55' : 'rgba(0,0,0,0.04)'
+                }
+              }}
             />
             <Chip
               label="Doações"
               onClick={() => filterByType("Doações")}
               color={selectedType === "Doações" ? "success" : "default"}
               variant={selectedType === "Doações" ? "filled" : "outlined"}
+              sx={{
+                bgcolor: selectedType === "Doações" ? '#009970' : 'transparent',
+                color: selectedType === "Doações" ? '#fff' : 'inherit',
+                '&:hover': {
+                  bgcolor: selectedType === "Doações" ? '#007a55' : 'rgba(0,0,0,0.04)'
+                }
+              }}
             />
             <Chip
               label="Trocas"
               onClick={() => filterByType("Trocas")}
               color={selectedType === "Trocas" ? "success" : "default"}
               variant={selectedType === "Trocas" ? "filled" : "outlined"}
+              sx={{
+                bgcolor: selectedType === "Trocas" ? '#009970' : 'transparent',
+                color: selectedType === "Trocas" ? '#fff' : 'inherit',
+                '&:hover': {
+                  bgcolor: selectedType === "Trocas" ? '#007a55' : 'rgba(0,0,0,0.04)'
+                }
+              }}
             />
           </Stack>
         </Box>
@@ -120,35 +125,86 @@ export default function MyItems() {
               ? "Você ainda não cadastrou nenhum item"
               : `Você não tem itens do tipo "${selectedType}"`
             }
-            action={
-              <Link to="/create-item" style={{ textDecoration: 'none' }}>
-                <Chip 
-                  label="Adicionar Item" 
-                  color="success" 
-                  sx={{ mt: 2, cursor: 'pointer' }}
-                />
-              </Link>
-            }
+            subtitle="Clique no botão + Adicionar no topo para criar um novo anúncio"
           />
         ) : (
-          <div className="items-grid">
-            {filteredItems.map((item) => (
-              <Card 
-                key={item.id} 
-                className="item-card"
-                sx={{ 
-                  position: 'relative',
-                  '&:hover .item-actions': {
-                    opacity: 1
-                  }
-                }}
-              >
-                <Link to={`/product/${item.slug}`} style={{ textDecoration: 'none' }}>
-                  <CardActionArea>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 3 
+          }}>
+            {filteredItems.map((item) => {
+              const mainImage = item.images?.[0] || item.photos?.[0];
+              
+              return (
+                <Card 
+                  key={item.id}
+                  sx={{ 
+                    position: 'relative',
+                    borderRadius: 3,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                      transform: 'translateY(-2px)'
+                    },
+                    '&:hover .item-actions': {
+                      opacity: 1
+                    }
+                  }}
+                >
+                  {/* Botões de ação */}
+                  <Box 
+                    className="item-actions"
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      display: 'flex',
+                      gap: 1,
+                      zIndex: 1
+                    }}
+                  >
+                    <IconButton
+                      component={Link}
+                      to={`/edit-item/${item.id}`}
+                      size="small"
+                      sx={{
+                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 1)' },
+                        boxShadow: 1
+                      }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
+                      size="small"
+                      sx={{
+                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                        color: '#dc2626',
+                        '&:hover': { 
+                          bgcolor: 'rgba(255, 255, 255, 1)',
+                          color: '#b91c1c'
+                        },
+                        boxShadow: 1
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  <CardActionArea component={Link} to={`/product/${item.slug || item.id}`}>
                     <CardMedia
                       component="img"
                       height="200"
-                      image={fullUrl(item.photos?.[0]?.image)}
+                      image={mainImage ? fullUrl(mainImage) : "/placeholder.png"}
                       alt={item.title}
                       sx={{ objectFit: 'cover' }}
                     />
@@ -156,80 +212,64 @@ export default function MyItems() {
                       <Typography 
                         variant="h6" 
                         sx={{ 
-                          fontSize: '16px',
-                          fontWeight: 600,
-                          mb: 0.5,
+                          fontWeight: 600, 
+                          mb: 1,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
                         }}
                       >
                         {item.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        {item.city_name}
-                      </Typography>
-                      <Stack direction="row" spacing={1}>
+
+                      <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
                         <Chip 
-                          label={item.type === "Donation" ? "Doação" : item.type === "Trade" ? "Troca" : "Venda"}
+                          label={item.category_name || item.category}
                           size="small"
-                          color={item.type === "Donation" ? "success" : item.type === "Trade" ? "primary" : "default"}
+                          sx={{ 
+                            bgcolor: '#f0f0f0',
+                            fontSize: 12
+                          }}
                         />
-                        <Chip 
-                          label={item.category_name}
-                          size="small"
-                          variant="outlined"
-                        />
+                        {item.type === 'Trade' && (
+                          <Chip 
+                            label="Troca" 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: '#009970',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
+                          />
+                        )}
+                        {item.type === 'Donation' && (
+                          <Chip 
+                            label="Doação" 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: '#0288d1',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
+                          />
+                        )}
                       </Stack>
+
+                      {item.city && (
+                        <Typography variant="body2" color="text.secondary">
+                          📍 {item.city.name || item.city_name}, {item.city.state || ''}
+                        </Typography>
+                      )}
                     </CardContent>
                   </CardActionArea>
-                </Link>
-                
-                <Box 
-                  className="item-actions"
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    opacity: 0,
-                    transition: 'opacity 0.2s',
-                    display: 'flex',
-                    gap: 1
-                  }}
-                >
-                  <IconButton
-                    component={Link}
-                    to={`/edit-item/${item.id}`}
-                    size="small"
-                    sx={{
-                      bgcolor: 'white',
-                      '&:hover': { bgcolor: '#f5f5f5' },
-                      boxShadow: 1
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleDelete(item.id);
-                    }}
-                    size="small"
-                    sx={{
-                      bgcolor: 'white',
-                      color: '#dc2626',
-                      '&:hover': { bgcolor: '#fee2e2' },
-                      boxShadow: 1
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              );
+            })}
+          </Box>
         )}
-      </div>
+      </Box>
     </>
   );
 }

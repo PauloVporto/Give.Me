@@ -14,12 +14,14 @@ from .views import (
     AddFavoriteView,
     RemoveFavoriteView,
     check_favorite,
+    MyItemsView,
 )
 
 urlpatterns = [
     path("users/profile/", UserProfileView.as_view(), name="user-profile"),
     path("users/profile/update/", UserProfileUpdateView.as_view(), name="user-update"),
     path("items/", views.ReadItemsView.as_view(), name="get-items"),
+    path("items/my-items/", MyItemsView.as_view(), name="my-items"),
     path("items/create/", views.CreateItemView.as_view(), name="items-create"),
     path("items/<uuid:pk>/", views.ReadItemView.as_view(), name="item-detail"),
     path("items/update/<uuid:pk>/", views.UpdateItemView.as_view(), name="update-item"),
