@@ -1,7 +1,7 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
-import sys
 
 from dotenv import load_dotenv
 
@@ -119,7 +119,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-
+CORS_ALLOWED_ORIGINS = [
+    "https://seu-frontend.vercel.app",
+    "http://localhost:3000",  # para desenvolvimento
+]
 
 
 if any("pytest" in arg for arg in sys.argv):
@@ -128,4 +131,3 @@ if any("pytest" in arg for arg in sys.argv):
         DATABASES["default"]["OPTIONS"]["sslmode"] = os.getenv("DB_SSLMODE", "disable")
     except KeyError as e:
         print(e)
-        
