@@ -13,6 +13,7 @@ from .serializers import (
     CitySerializer,
     ItemPhotoSerializer,
     ItemSerializer,
+    UserCreateSerializer,
     UserProfileSerializer,
     UserSerializer,
 )
@@ -23,7 +24,7 @@ class CreateUserView(generics.CreateAPIView):
     http_method_names = ["post"]
     description = "Endpoint for creating a new user."
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserCreateSerializer
     permission_classes = [AllowAny]
 
 
