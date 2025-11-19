@@ -55,7 +55,7 @@ import EditItem from "./pages/EditItem";
 
 function Logout() {
   localStorage.clear();
-  return <Navigate to="/login" />;
+  return <Navigate to="/" />;
 }
 
 function RegisterAndLogout() {
@@ -71,29 +71,15 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<RegisterAndLogout />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/product/:slug" element={<ProductDetail />} />
 
         {/* privadas */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/create-item"
           element={
             <ProtectedRoute>
               <ListItem />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/product/:slug"
-          element={
-            <ProtectedRoute>
-              <ProductDetail />
             </ProtectedRoute>
           }
         />
