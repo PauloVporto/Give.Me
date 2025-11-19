@@ -38,6 +38,7 @@ class Item(models.Model):
     title = models.TextField()
     description = models.TextField(null=True, blank=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Sell")
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Preço para items do tipo Sell
     trade_interest = models.TextField(null=True, blank=True)  # Campo para interesse de troca
     category = models.ForeignKey(
         Category, on_delete=models.PROTECT, related_name="items"

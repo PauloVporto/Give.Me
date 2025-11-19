@@ -1,24 +1,21 @@
 // ProductDetail.jsx
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
 import {
   Box,
-  Grid,
   Typography,
   Button,
   CardMedia,
   Avatar,
-  IconButton,
   Chip,
   CircularProgress,
 } from "@mui/material";
-import { ArrowBack, Edit, LocationOn, ChatBubbleOutline } from "@mui/icons-material";
+import { ArrowBack, LocationOn, ChatBubbleOutline } from "@mui/icons-material";
 import { fullUrl, Navbar } from "../components/Base";
 
-// Componente SmallImage - Mantido
 function SmallImage({ src, alt, onClick, selected }) {
   return (
     <Box
@@ -51,7 +48,6 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Lógica de autenticação e busca de dados (Mantida)
   const isAuthenticated = useMemo(() => {
     try {
       const token = localStorage.getItem(ACCESS_TOKEN);
@@ -119,13 +115,9 @@ export default function ProductDetail() {
   }
 
   const images = (item.images || item.photos || []).map((img) => fullUrl(img));
-  const placeholder = "/ImagEtc/SemFoto.png"; // coloque aqui sua imagem padrão
+  const placeholder = "/ImagEtc/SemFoto.png";
 
-  const mainImage =
-    images.length > 0
-      ? images[selectedImage] || images[0]
-      : placeholder;
- 
+  const mainImage = images.length > 0 ? images[selectedImage] || images[0] : placeholder;
 
   return (
     <>
@@ -136,14 +128,13 @@ export default function ProductDetail() {
         display: 'flex',
         position: 'relative'
       }}>
-        {/* Left: Images - ocupa o espaço disponível */}
+        {/* Left: Images */}
         <Box sx={{
           flex: 1,
           bgcolor: "background.paper",
           minHeight: '100vh',
-          pr: { xs: 0, md: '420px' } // reserva espaço para o card fixo no desktop
+          pr: '420px'
         }}>
-
           {/* Main Image Container */}
           <Box
             sx={{
@@ -151,7 +142,7 @@ export default function ProductDetail() {
               alignItems: "center",
               justifyContent: "center",
               width: "100%",
-              height: { xs: 350, md: 600 },
+              height: 600,
               overflow: "hidden",
               backgroundColor: "#000",
               borderBottom: "1px solid #222",
@@ -177,9 +168,8 @@ export default function ProductDetail() {
           </Box>
         </Box>
 
-        {/* Right: Details - fixo no canto direito */}
+        {/* Right: Details - Fixed sidebar */}
         <Box sx={{
-          display: { xs: 'none', md: 'block' },
           position: 'fixed',
           right: 0,
           top: '64px',
@@ -191,10 +181,7 @@ export default function ProductDetail() {
           overflowY: 'auto',
           zIndex: 1000
         }}>
-          <Box sx={{
-            px: 3,
-            py: 3
-          }}>
+          <Box sx={{ px: 3, py: 3 }}>
             {/* Title and Header */}
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
               <Box sx={{ flex: 1 }}>
@@ -202,10 +189,14 @@ export default function ProductDetail() {
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <LocationOn fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">{item.city ? `${item.city.name} - ${item.city.state}` : '—'}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {item.city ? `${item.city.name} - ${item.city.state}` : '—'}
+                    </Typography>
                   </Box>
                   <Typography variant="body2" color="text.secondary">•</Typography>
-                  <Typography variant="body2" color="text.secondary">Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}
+                  </Typography>
                 </Box>
               </Box>
               <Box>
@@ -221,7 +212,7 @@ export default function ProductDetail() {
               </Box>
             </Box>
 
-            {/* Description card */}
+            {/* Description */}
             {item.description && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Descrição</Typography>
@@ -231,7 +222,7 @@ export default function ProductDetail() {
               </Box>
             )}
 
-            {/* Small info cards */}
+            {/* Condition and Category */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
                 <Typography variant="body2" color="text.secondary">Condição</Typography>
@@ -247,12 +238,22 @@ export default function ProductDetail() {
               </Box>
             </Box>
 
-            {/* Exchange interests */}
-            {item.type === 'Trade' && (
+            {/* Exchange interests - only for Trade items */}
+            {item.type === 'Trade' && item.trade_interest && (
               <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
                 <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
                 <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
-                  {item.trade_interest ? item.trade_interest : 'Nenhum interesse de troca especificado'}
+                  {item.trade_interest}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Price - only for Sell items */}
+            {item.type === 'Sell' && item.price && (
+              <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Preço</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#027B55' }}>
+                  R$ {parseFloat(item.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
             )}
@@ -280,155 +281,14 @@ export default function ProductDetail() {
                     width: 48,
                     height: 48
                   }}>
-                    {item.user_name?.[0] || item.user?.[0] || '?'}
+                    {item.user?.[0]?.toUpperCase() || '?'}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {item.user_name || '—'}
+                      {item.user || 'Usuário'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Button
-                  fullWidth
-                  size="large"
-                  variant="contained"
-                  startIcon={<ChatBubbleOutline />}
-                  disabled={!isAuthenticated || isOwner}
-                  onClick={handleChatStart}
-                  sx={{
-                    bgcolor: '#007a55',
-                    '&:hover': {
-                      bgcolor: '#006845'
-                    },
-                    textTransform: 'none',
-                    height: 48
-                  }}
-                >
-                  Iniciar Conversa
-                </Button>
-              </Box>
-
-              <Box sx={{
-                bgcolor: '#ffffff',
-                borderTop: '1px solid #caf1e3',
-                p: 2,
-                textAlign: 'center'
-              }}>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  Use nosso chat para negociar com segurança
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Typography variant="caption" color="text.secondary">
-                ID do anúncio: {item.id}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Mobile version - Details below image */}
-        <Box sx={{ display: { xs: 'block', md: 'none' }, bgcolor: 'background.paper', px: 2, py: 3 }}>
-          <Box sx={{ maxWidth: 480, margin: '0 auto' }}>
-
-            {/* Title and Header */}
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>{item.title}</Typography>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <LocationOn fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">{item.city ? `${item.city.name} - ${item.city.state}` : '—'}</Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">•</Typography>
-                  <Typography variant="body2" color="text.secondary">Publicado em {new Date(item.created_at || Date.now()).toLocaleDateString('pt-BR')}</Typography>
-                </Box>
-              </Box>
-              <Box>
-                <Chip
-                  label={item.type === 'Sell' ? 'Venda' : item.type === 'Donation' ? 'Doação' : 'Troca'}
-                  sx={{
-                    fontWeight: 600,
-                    bgcolor: '#ecfdf5',
-                    color: '#027B55',
-                    border: '1px solid #caf1e3'
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Description card */}
-            {item.description && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Descrição</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6 }}>
-                  {item.description}
-                </Typography>
-              </Box>
-            )}
-
-            {/* Small info cards */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
-                <Typography variant="body2" color="text.secondary">Condição</Typography>
-                <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
-                  {item.status === 'new' ? 'Novo' : 'Usado'}
-                </Typography>
-              </Box>
-              <Box sx={{ flex: 1, bgcolor: '#f8f9fa', p: 2, borderRadius: 2 }}>
-                <Typography variant="body2" color="text.secondary">Categoria</Typography>
-                <Typography variant="subtitle2" sx={{ mt: 0.5, fontWeight: 600 }}>
-                  {item.category_name || item.category || '—'}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Exchange interests */}
-            {item.type === 'Trade' && (
-              <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Interesses de troca</Typography>
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-line', lineHeight: 1.6, color: '#085d45' }}>
-                  {item.trade_interest ? item.trade_interest : 'Nenhum interesse de troca especificado'}
-                </Typography>
-              </Box>
-            )}
-
-            {/* Seller info */}
-            <Box sx={{
-              mb: 3,
-              bgcolor: '#ecfdf5',
-              borderRadius: 2,
-              overflow: 'hidden'
-            }}>
-              <Box sx={{ p: 2.5 }}>
-                <Typography variant="subtitle1" sx={{
-                  mb: 2,
-                  color: '#027B55',
-                  fontWeight: 500
-                }}>
-                  Anunciado por
-                </Typography>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                  <Avatar sx={{
-                    bgcolor: '#e6e8ea',
-                    color: '#637381',
-                    width: 48,
-                    height: 48
-                  }}>
-                    {item.user_name?.[0] || item.user?.[0] || '?'}
-                  </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {item.user_name || '—'}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Membro desde {item.user?.created_at ? new Date(item.user.created_at).toLocaleDateString('pt-BR') : new Date(Date.now()).toLocaleDateString('pt-BR')}
+                      Membro desde {new Date(item.created_at).toLocaleDateString('pt-BR')}
                     </Typography>
                   </Box>
                 </Box>

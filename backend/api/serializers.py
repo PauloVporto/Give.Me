@@ -139,6 +139,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "photos",
             "images",
             "type",
+            "price",
             "trade_interest",
             "uploaded_photos",
         ]
