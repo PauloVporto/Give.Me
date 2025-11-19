@@ -234,7 +234,7 @@ const handleSearch = (value) => {
                 sx={{
                   fontWeight: selectedType === tipo ? 600 : 400,
                   borderRadius: 2,
-                  bgcolor: selectedType === tipo ? '#009970' : 'transparent',
+                  bgcolor: selectedType === tipo ? '#009959ff' : 'transparent',
                   color: selectedType === tipo ? '#fff' : 'inherit',
                   '&:hover': {
                     bgcolor: selectedType === tipo ? '#007a55' : 'rgba(0,0,0,0.04)'
@@ -261,7 +261,7 @@ const handleSearch = (value) => {
               sx={{
                 fontWeight: selectedCategory === "Todas" ? 600 : 400,
                 borderRadius: 2,
-                bgcolor: selectedCategory === "Todas" ? '#009970' : 'transparent',
+                bgcolor: selectedCategory === "Todas" ? '#009959ff' : 'transparent',
                 color: selectedCategory === "Todas" ? '#fff' : 'inherit',
                 '& .MuiChip-icon': {
                   color: selectedCategory === "Todas" ? '#fff' : 'inherit'
@@ -272,7 +272,6 @@ const handleSearch = (value) => {
               }}
             />
 
-            {/* Category chips from API - sem Outros e Roupas */}
             {categories && categories.length > 0 && categories
               .filter(category => {
                 const name = typeof category === 'string' ? category : (category.name || category.title || '');
@@ -294,7 +293,7 @@ const handleSearch = (value) => {
                     sx={{
                       fontWeight: selectedCategory === name ? 600 : 400,
                       borderRadius: 2,
-                      bgcolor: selectedCategory === name ? '#009970' : 'transparent',
+                      bgcolor: selectedCategory === name ? '#009959ff' : 'transparent',
                       color: selectedCategory === name ? '#fff' : 'inherit',
                       '& .MuiChip-icon': {
                         color: selectedCategory === name ? '#fff' : 'inherit'

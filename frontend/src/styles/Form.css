@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary-green: #027B55;
-  --primary-green-dark: #006845;
-  --primary-green-light: #ecfdf5;
+  --primary-green: #009959;
+  --primary-green-dark: #007a47;
+  --primary-green-light: #e6f7f0;
   --text-dark: #1a1a1a;
   --text-regular: #4a4a4a;
   --text-light: #6b6b6b;
@@ -25,7 +25,7 @@
 
 /* Página com gradiente */
 .page {
-  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  background: linear-gradient(135deg, #e6f7f0 0%, #ccf0e0 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,7 +81,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(2, 123, 85, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 153, 89, 0.3);
 }
 
 .app-name {
@@ -137,7 +137,7 @@
 .form-input:focus {
   outline: none;
   border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(2, 123, 85, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 153, 89, 0.1);
 }
 
 .forgot-password {
@@ -169,7 +169,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
-  box-shadow: 0 4px 12px rgba(2, 123, 85, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 153, 89, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +177,7 @@
 
 .form-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(2, 123, 85, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 153, 89, 0.35);
 }
 
 .form-button:active:not(:disabled) {

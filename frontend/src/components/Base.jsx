@@ -100,7 +100,7 @@ export function TopNav({ activePage = "home", onSearch }) {
       <AppBar
         position="fixed"
         sx={{
-          backgroundColor: "#3cdf62ff",
+          backgroundColor: "#009959ff",
           color: "#fff",
           boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           top: 0,
