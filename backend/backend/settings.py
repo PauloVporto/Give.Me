@@ -116,12 +116,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOWED_ORIGINS = [
-    "https://seu-frontend.vercel.app",
-    "http://localhost:3000",  # para desenvolvimento
+    "https://give-me.vercel.app",
+    "https://*.vercel.app",  # Para preview deployments
+    "http://localhost:3000",
 ]
 
 

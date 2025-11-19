@@ -21,6 +21,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "giveme-production.up.railway.app"
+    "VITE_API_URL": "https://giveme-production.up.railway.app"
   }
 }
