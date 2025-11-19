@@ -142,6 +142,11 @@ export default function EditItem() {
         listing_state: 'active'
       };
 
+      // Adicionar preço se o tipo for "Sell"
+      if (type === "Sell" && price) {
+        payload.price = price;
+      }
+
       // Adicionar interesse de troca se o tipo for "Trade"
       if (type === "Trade" && tradeInterest.trim()) {
         payload.trade_interest = tradeInterest.trim();

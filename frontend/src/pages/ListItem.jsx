@@ -103,6 +103,11 @@ export default function ListItem() {
       formData.append('type', mapType(type));
       formData.append('listing_state', 'active');
       
+      // Adicionar preço se o tipo for "sell"
+      if (type === "sell" && price) {
+        formData.append('price', price);
+      }
+      
       // Adicionar interesse de troca se o tipo for "trade"
       if (type === "trade" && tradeInterest.trim()) {
         formData.append('trade_interest', tradeInterest.trim());

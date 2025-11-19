@@ -249,11 +249,15 @@ export default function ProductDetail() {
             )}
 
             {/* Price - only for Sell items */}
-            {item.type === 'Sell' && item.price && (
-              <Box sx={{ mb: 3, bgcolor: '#ecfdf5', p: 2.5, borderRadius: 2 }}>
-                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Preço</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#027B55' }}>
-                  R$ {parseFloat(item.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {item.type === 'Sell' && (
+              <Box sx={{ mb: 3, bgcolor: '#e6f7f0', p: 2.5, borderRadius: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, color: '#009959' }}>Preço</Typography>
+                <Typography variant="h5" sx={{ fontWeight: 700, color: '#009959' }}>
+                  {item.price ? (
+                    `R$ ${parseFloat(item.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  ) : (
+                    'Preço não informado'
+                  )}
                 </Typography>
               </Box>
             )}

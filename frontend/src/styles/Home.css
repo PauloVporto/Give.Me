@@ -118,7 +118,7 @@
   font-weight: 600;
   margin-bottom: 0.6rem;
 }
-
+/* Para aumentar o tamanho do quadradinho eu devo mexer no padding */
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -144,7 +144,7 @@
 /* Products grid */
 .products {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
   margin-bottom: 5rem; /* espaço pro bottom nav */
 }

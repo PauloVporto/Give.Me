@@ -225,14 +225,6 @@ export default function MyItems() {
                       </Typography>
 
                       <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip 
-                          label={item.category_name || item.category}
-                          size="small"
-                          sx={{ 
-                            bgcolor: '#f0f0f0',
-                            fontSize: 12
-                          }}
-                        />
                         {item.type === 'Trade' && (
                           <Chip 
                             label="Troca" 
@@ -250,6 +242,17 @@ export default function MyItems() {
                             size="small" 
                             sx={{ 
                               bgcolor: '#0288d1',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
+                          />
+                        )}
+                        {item.type === 'Sell' && (
+                          <Chip 
+                            label="Venda" 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: '#e43011ff',
                               color: '#fff',
                               fontSize: 12
                             }}

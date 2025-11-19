@@ -128,29 +128,38 @@ export default function Favorites() {
                         {item.title}
                       </Typography>
 
-                      <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                        <Chip 
-                          label={item.category_name || item.category}
-                          size="small"
-                          sx={{ 
-                            bgcolor: '#f0f0f0',
-                            fontSize: 12
-                          }}
-                        />
+                      <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
                         {item.type === 'Trade' && (
                           <Chip 
                             label="Troca" 
                             size="small" 
-                            color="success"
-                            sx={{ fontSize: 12 }}
+                            sx={{ 
+                              bgcolor: '#009970',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
                           />
                         )}
                         {item.type === 'Donation' && (
                           <Chip 
                             label="Doação" 
                             size="small" 
-                            color="info"
-                            sx={{ fontSize: 12 }}
+                            sx={{ 
+                              bgcolor: '#0288d1',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
+                          />
+                        )}
+                        {item.type === 'Sell' && (
+                          <Chip 
+                            label="Venda" 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: '#e43011ff',
+                              color: '#fff',
+                              fontSize: 12
+                            }}
                           />
                         )}
                       </Stack>
