@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# List directory to debug
+RUN ls -la /app && echo "Checking for manage.py:" && ls -la /app/manage.py || echo "manage.py not found"
+
 RUN mkdir -p /app/staticfiles /app/media
 
 RUN printf '#!/bin/bash\n\
