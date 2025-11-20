@@ -27,8 +27,9 @@ class ItemPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "url", "created_at"]
 
     def get_url(self, obj):
-        return obj.get_url()
-
+        if obj.image:
+            return obj.image.url 
+        return None
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -147,7 +148,7 @@ class ItemSerializer(serializers.ModelSerializer):
         read_only_fields = ["user", "id", "created_at", "updated_at", "city"]
 
     def get_photos(self, obj):
-        return [photo.get_url() for photo in obj.photos.all().order_by("position")]
+        return [photo.image for photo in obj.photos.all().order_by("position")]
 
     def get_images(self, obj):
         return self.get_photos(obj)
