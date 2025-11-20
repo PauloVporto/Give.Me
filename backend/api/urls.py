@@ -18,6 +18,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path("users/", views.ListUsersView.as_view(), name="list-users"),
+    path("users/delete/<int:pk>/", views.DeleteUserView.as_view(), name="delete-user"),
     path("users/profile/", UserProfileView.as_view(), name="user-profile"),
     path("users/profile/update/", UserProfileUpdateView.as_view(), name="user-update"),
     path("items/", views.ReadItemsView.as_view(), name="get-items"),

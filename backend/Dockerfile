@@ -21,6 +21,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# List directory to debug
+RUN ls -la /app && echo "Checking for manage.py:" && ls -la /app/manage.py || echo "manage.py not found"
+
+RUN mkdir -p /app/staticfiles /app/media
+
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Use shell form to ensure proper execution context
+CMD python manage.py migrate --noinput && \
+    python manage.py collectstatic --noinput && \
+    gunicorn backend.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120
