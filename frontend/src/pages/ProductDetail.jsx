@@ -2,8 +2,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import api from "../api";
+import api, { chatAPI } from "../api";
 import { ACCESS_TOKEN } from "../constants";
+import { useAlert } from "../contexts/AlertContext";
 import {
   Box,
   Typography,
@@ -89,8 +90,27 @@ export default function ProductDetail() {
     return ownerId && String(ownerId) === String(currentUserId);
   }, [item, currentUserId]);
 
-  const handleChatStart = () => {
-    console.log('Starting chat with seller');
+  const { showWarning, showError, showSuccess } = useAlert();
+
+  const handleChatStart = async () => {
+    if (!item?.owner_supabase_user_id) {
+      showWarning("O vendedor ainda não configurou o perfil para chat. Tente novamente mais tarde.");
+      return;
+    }
+
+    try {
+      const conversation = await chatAPI.createConversation(item.owner_supabase_user_id);
+      showSuccess("Conversa iniciada com sucesso!");
+      navigate(`/chat?conversation=${conversation.id}`);
+    } catch (error) {
+      console.error('Erro ao criar conversa:', error);
+      
+      if (error.response?.status === 400) {
+        showError("Você precisa vincular seu perfil ao Supabase antes de usar o chat.");
+      } else {
+        showError("Erro ao iniciar conversa. Tente novamente.");
+      }
+    }
   };
 
   if (loading) {
