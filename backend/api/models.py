@@ -61,7 +61,7 @@ class Item(models.Model):
 class ItemPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="photos")
-    image = models.ImageField(upload_to="items-%Y-%m-%d-", null=True, blank=True)
+    image = image = models.CharField(max_length=500)
     url = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
