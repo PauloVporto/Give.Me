@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('api', '0007_alter_favorite_unique_together_alter_favorite_table'),
+        ('api', '0007_item_price'),
     ]
 
     operations = [
