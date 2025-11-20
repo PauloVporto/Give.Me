@@ -86,19 +86,17 @@ DATABASES = {
     }
 }
 
-# Diga ao Django para usar o armazenamento S3
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# Puxe as chaves do Supabase do seu arquivo .env
-AWS_ACCESS_KEY_ID = os.getenv('SUPABASE_ANON_KEY') 
-AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY') 
-# O ENDPOINT (Puxe também do .env)
+AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_SECRET_KEY')
 AWS_S3_ENDPOINT_URL = os.getenv('SUPABASE_ENDPOINT_URL')
-# Detalhes do Bucket
 AWS_STORAGE_BUCKET_NAME = os.getenv('SUPABASE_BUCKET_NAME')
-AWS_DEFAULT_ACL = 'public-read' 
-AWS_S3_SIGNATURE_VERSION = 's3v4'
-AWS_S3_ADDRESSING_STYLE = 'path'
-AWS_S3_REGION_NAME = None
+AWS_S3_CUSTOM_DOMAIN = os.getenv('SUPABASE_CUSTOM_DOMAIN')
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_DEFAULT_ACL = None 
+AWS_S3_REGION_NAME = "sa-east-1" 
+print(AWS_S3_CUSTOM_DOMAIN)
+MEDIA_URL = 'https://' + AWS_S3_CUSTOM_DOMAIN + '/'
 
 
 AUTH_PASSWORD_VALIDATORS = [
