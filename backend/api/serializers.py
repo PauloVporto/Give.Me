@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-
+from .services import upload_item_photo
+from django.db import transaction
 from .models import Category, City, Item, ItemPhoto, Notification, UserProfile, Favorite
 
 
@@ -151,19 +152,10 @@ class ItemSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         return self.get_photos(obj)
 
+    @transaction.atomic 
     def create(self, validated_data):
         uploaded_photos = validated_data.pop("uploaded_photos", [])
-        # Não remover type - ele deve ser salvo no banco
-        #city_id = validated_data.pop("city_id", None)
-
-        # if city_id:
-        #     try:
-        #         validated_data["city"] = City.objects.get(id=city_id)
-        #     except City.DoesNotExist:
-        #         validated_data["city"] = None
-        # else:
-        #     validated_data.pop("city", None)
-
+        
         city_name = validated_data.pop("city_name", None)
         city_state = validated_data.pop("city_state", None)
 
@@ -176,10 +168,22 @@ class ItemSerializer(serializers.ModelSerializer):
 
         item = Item.objects.create(**validated_data)
 
-        for index, photo in enumerate(uploaded_photos, start=1):
-            ItemPhoto.objects.create(item=item, image=photo, position=index)
+        for index, photo_file in enumerate(uploaded_photos, start=1):
+            try:
+                filename = f"items/{item.id}_{photo_file.name}"
+                image_url = upload_item_photo(photo_file, filename)
+                
+                ItemPhoto.objects.create(
+                    item=item, 
+                    image=image_url, 
+                    position=index
+                )
+                
+            except Exception as e:
+                raise serializers.ValidationError({'photos': f'Erro no upload para Supabase: {e}'})
 
         return item
+
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
