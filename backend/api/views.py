@@ -57,7 +57,6 @@ class CreateItemView(generics.CreateAPIView):
         try:
             serializer.save(user=self.request.user, uploaded_photos=photos)
         except Exception as e:
-
             print(f"Erro ao criar item: {str(e)}")
             print(traceback.format_exc())
             raise
@@ -94,9 +93,10 @@ class ReadItemView(generics.RetrieveAPIView):
     serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
 
-    # def get_queryset(self):
-    # user = self.request.user
-    # return Item.objects.filter(user=user)
+    def get_queryset(self):
+        #     user = self.request.user
+        #     return Item.objects.filter(user=user)
+        return Item.objects.all()
 
 
 class ReadItemsView(generics.ListAPIView):
@@ -108,6 +108,18 @@ class ReadItemsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Item.objects.all()
+
+
+class MyItemsView(generics.ListAPIView):
+    name = "My Items"
+    http_method_names = ["get"]
+    description = "Endpoint for reading items of authenticated user."
+    serializer_class = ItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Item.objects.filter(user=user).order_by("-created_at")
 
 
 class UserProfileView(generics.RetrieveAPIView):
