@@ -2,7 +2,7 @@ const REGISTER_URL = '**/users/register*';
 
 describe('Registro - testes funcionais', () => {
   beforeEach(() => {
-    cy.visit('/register');
+    cy.visit('https://give-me.vercel.app/register');
     cy.clearLocalStorage();
   });
 
@@ -140,7 +140,7 @@ describe('Registro - testes funcionais', () => {
 
 describe('Registro - casos especiais', () => {
   beforeEach(() => {
-    cy.visit('/register');
+    cy.visit('https://give-me.vercel.app/register');
     cy.clearLocalStorage();
   });
 
@@ -162,7 +162,7 @@ describe('Registro - casos especiais', () => {
 describe('Registro (testes avançados)', () => {
   
   beforeEach(() => {
-    cy.visit('/register');
+    cy.visit('https://give-me.vercel.app/register');
     cy.clearLocalStorage();
   });
 

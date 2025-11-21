@@ -2,7 +2,7 @@ const LOGIN_URL = '**/users/login*';
 
 describe("Tela de Login", () => {
   beforeEach(() => {
-    cy.visit("/login");
+    cy.visit("https://give-me.vercel.app/login");
     cy.clearLocalStorage();
   });
 
