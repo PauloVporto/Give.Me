@@ -28,6 +28,8 @@ services:
       - SUPABASE_CUSTOM_DOMAIN=${SUPABASE_CUSTOM_DOMAIN}
       - SUPABASE_ENDPOINT_URL=${SUPABASE_ENDPOINT_URL}
       - SUPABASE_BUCKET_NAME=${SUPABASE_BUCKET_NAME}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
 
   # Frontend React
   frontend:
@@ -44,6 +46,8 @@ services:
     - CHOKIDAR_USEPOLLING=true    # força o React/Vite a detectar mudanças
     - WATCHPACK_POLLING=true      
     - VITE_API_URL=http://localhost:8000
+    - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+    - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     - HOST=0.0.0.0
     depends_on:
       - backend

@@ -91,7 +91,7 @@ class ReadItemView(generics.RetrieveAPIView):
     http_method_names = ["get"]
     description = "Endpoint for reading an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         #     user = self.request.user
@@ -151,7 +151,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
 class ListCategoriesView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [IsAuthenticated]
 
 
 class CreateCategoryView(generics.CreateAPIView):

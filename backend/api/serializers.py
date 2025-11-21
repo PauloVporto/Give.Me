@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .services import upload_item_photo
-from django.db import transaction
-from .models import Category, City, Item, ItemPhoto, Notification, UserProfile, Favorite
+
+from .models import Category, City, Favorite, Item, ItemPhoto, Notification, UserProfile
+from .services import create_supabase_user, upload_item_photo
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -28,8 +29,9 @@ class ItemPhotoSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         if obj.image:
-            return obj.image.url 
+            return obj.image.url
         return None
+
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,7 +49,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["photo_url", "city", "bio", "notifications_enabled"]
+        fields = ["photo_url", "city", "bio", "notifications_enabled", "supabase_user_id"]
+        read_only_fields = ["supabase_user_id"]
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -65,9 +68,26 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data.get("email")
+        password = validated_data.get("password")
+        first_name = validated_data.get("first_name", "")
+        last_name = validated_data.get("last_name", "")
+
         validated_data["username"] = email
         user = User.objects.create_user(**validated_data)
-        UserProfile.objects.create(user=user)
+
+        try:
+            supabase_user_id = create_supabase_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+
+            UserProfile.objects.create(user=user, supabase_user_id=supabase_user_id)
+        except Exception as e:
+            print(f"Aviso: Usuário criado no Django mas falhou no Supabase: {e}")
+            UserProfile.objects.create(user=user)
+
         return user
 
 
@@ -110,9 +130,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ItemSerializer(serializers.ModelSerializer):
+    owner_supabase_user_id = serializers.SerializerMethodField()
     category_name = serializers.CharField(source="category.name", read_only=True)
     city = CitySerializer(read_only=True)
-    #city_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
+    # city_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
     city_name = serializers.CharField(write_only=True, required=False)
     city_state = serializers.CharField(write_only=True, required=False)
     photos = serializers.SerializerMethodField()
@@ -128,6 +149,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "user",
+            "owner_supabase_user_id",
             "description",
             "category",
             "category_name",
@@ -145,7 +167,20 @@ class ItemSerializer(serializers.ModelSerializer):
             "trade_interest",
             "uploaded_photos",
         ]
-        read_only_fields = ["user", "id", "created_at", "updated_at", "city"]
+        read_only_fields = [
+            "user",
+            "id",
+            "created_at",
+            "updated_at",
+            "city",
+            "owner_supabase_user_id",
+        ]
+
+    def get_owner_supabase_user_id(self, obj):
+        try:
+            return obj.user.userprofile.supabase_user_id
+        except (AttributeError, UserProfile.DoesNotExist):
+            return None
 
     def get_photos(self, obj):
         return [photo.image for photo in obj.photos.all().order_by("position")]
@@ -153,18 +188,14 @@ class ItemSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         return self.get_photos(obj)
 
-    @transaction.atomic 
+    @transaction.atomic
     def create(self, validated_data):
         uploaded_photos = validated_data.pop("uploaded_photos", [])
-        
         city_name = validated_data.pop("city_name", None)
         city_state = validated_data.pop("city_state", None)
 
         if city_name and city_state:
-            city, created = City.objects.get_or_create(
-                name=city_name,
-                state=city_state
-            )
+            city = City.objects.get_or_create(name=city_name, state=city_state)
             validated_data["city"] = city
 
         item = Item.objects.create(**validated_data)
@@ -173,18 +204,15 @@ class ItemSerializer(serializers.ModelSerializer):
             try:
                 filename = f"items/{item.id}_{photo_file.name}"
                 image_url = upload_item_photo(photo_file, filename)
-                
-                ItemPhoto.objects.create(
-                    item=item, 
-                    image=image_url, 
-                    position=index
-                )
-                
+
+                ItemPhoto.objects.create(item=item, image=image_url, position=index)
+
             except Exception as e:
-                raise serializers.ValidationError({'photos': f'Erro no upload para Supabase: {e}'})
+                raise serializers.ValidationError(
+                    {"photos": f"Erro no upload para Supabase: {e}"}
+                )
 
         return item
-
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
