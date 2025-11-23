@@ -20,6 +20,7 @@ export default function EditItem() {
   
   // Estados para imagens
   const [existingPhotos, setExistingPhotos] = useState([]);
+  const [existingPhotoIds, setExistingPhotoIds] = useState([]);
   const [newFiles, setNewFiles] = useState([]);
   const dropRef = useRef(null);
   
@@ -66,6 +67,7 @@ export default function EditItem() {
         
         // Fotos existentes
         setExistingPhotos(data.photos || data.images || []);
+        setExistingPhotoIds(data.photos_id || []);
       } catch (e) {
         console.error("Erro ao carregar item:", e);
         alert("Erro ao carregar dados do item");
@@ -229,23 +231,26 @@ export default function EditItem() {
                   padding: 0,
                 }}
               >
-                {existingPhotos.map((photo) => (
-                  <li key={photo.id} style={{ position: "relative" }}>
-                    <img
-                      src={fullUrl(photo.image || photo)}
-                      alt="Foto do item"
-                      style={{
+              {existingPhotos.map((photo_url, index) => {
+                  const photo_id = existingPhotoIds[index];
+                  if (!photo_id) return null;
+                  return (
+                    <li key={photo_id} style={{ position: "relative" }}> 
+                      <img
+                        src={fullUrl(photo_url)} 
+                        alt="Foto do item"
+                        style={{
                         width: "100%",
                         aspectRatio: "1/1",
                         objectFit: "cover",
                         borderRadius: 12,
-                        border: "1px solid #eee",
-                      }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeExistingPhoto(photo.id)}
-                      style={{
+                        border: "1px solid #eee",                       
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeExistingPhoto(photo_id)}
+                        style={{
                         position: "absolute",
                         top: 6,
                         right: 6,
@@ -256,12 +261,13 @@ export default function EditItem() {
                         padding: "4px 8px",
                         cursor: "pointer",
                         fontSize: 12,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

@@ -6,7 +6,7 @@ from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
+from .services import upload_item_photo
 from .models import Category, City, Favorite, Item, ItemPhoto, UserProfile
 from .serializers import (
     CategorySerializer,
@@ -67,7 +67,7 @@ class DeleteItemView(generics.DestroyAPIView):
     http_method_names = ["delete"]
     description = "Endpoint for deleting an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -79,7 +79,7 @@ class UpdateItemView(generics.UpdateAPIView):
     http_method_names = ["put", "patch", "get"]
     description = "Endpoint for updating an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -94,8 +94,6 @@ class ReadItemView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        #     user = self.request.user
-        #     return Item.objects.filter(user=user)
         return Item.objects.all()
 
 
@@ -213,7 +211,9 @@ def upload_item_photos(request, item_id):
 
     created_photos = []
     for index, photo in enumerate(photos_to_upload, start=current_count + 1):
-        item_photo = ItemPhoto.objects.create(item=item, image=photo, position=index)
+        filename = f"items/{item.id}_{photo.name}"
+        image_url = upload_item_photo(photo, filename)
+        item_photo = ItemPhoto.objects.create(item=item, image=image_url, position=index)
         created_photos.append(item_photo)
 
     serializer = ItemPhotoSerializer(created_photos, many=True)
@@ -227,8 +227,10 @@ def upload_item_photos(request, item_id):
     )
 
 
+
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated, IsOwner])
+
 def delete_item_photo(request, photo_id):
     try:
         photo = ItemPhoto.objects.get(id=photo_id, item__user=request.user)

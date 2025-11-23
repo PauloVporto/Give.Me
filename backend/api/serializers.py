@@ -29,9 +29,11 @@ class ItemPhotoSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         if obj.image:
-            return obj.image.url
-        return None
-
+            if isinstance(obj.image, str):
+                return obj.image 
+            else:
+               return None                 
+        return obj.url or ""
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -142,6 +144,7 @@ class ItemSerializer(serializers.ModelSerializer):
     uploaded_photos = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
+    photos_id = serializers.SerializerMethodField() 
 
     class Meta:
         model = Item
@@ -166,6 +169,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "price",
             "trade_interest",
             "uploaded_photos",
+            "photos_id"
         ]
         read_only_fields = [
             "user",
@@ -185,6 +189,9 @@ class ItemSerializer(serializers.ModelSerializer):
     def get_photos(self, obj):
         return [photo.image for photo in obj.photos.all().order_by("position")]
 
+    def get_photos_id(self, obj):
+        return [photo.id for photo in obj.photos.all().order_by("position")]
+    
     def get_images(self, obj):
         return self.get_photos(obj)
 
@@ -195,7 +202,10 @@ class ItemSerializer(serializers.ModelSerializer):
         city_state = validated_data.pop("city_state", None)
 
         if city_name and city_state:
-            city = City.objects.get_or_create(name=city_name, state=city_state)
+            city, created = City.objects.get_or_create(
+                name=city_name,
+                state=city_state
+            )
             validated_data["city"] = city
 
         item = Item.objects.create(**validated_data)
@@ -213,6 +223,7 @@ class ItemSerializer(serializers.ModelSerializer):
                 )
 
         return item
+    
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
