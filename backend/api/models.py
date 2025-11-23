@@ -38,8 +38,12 @@ class Item(models.Model):
     title = models.TextField()
     description = models.TextField(null=True, blank=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="Sell")
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Preço para items do tipo Sell
-    trade_interest = models.TextField(null=True, blank=True)  # Campo para interesse de troca
+    price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )  # Preço para items do tipo Sell
+    trade_interest = models.TextField(
+        null=True, blank=True
+    )  # Campo para interesse de troca
     category = models.ForeignKey(
         Category, on_delete=models.PROTECT, related_name="items"
     )
@@ -61,7 +65,7 @@ class Item(models.Model):
 class ItemPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="photos")
-    image  = models.CharField(max_length=500)
+    image = models.CharField(max_length=500)
     url = models.TextField(null=True, blank=True)
     position = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -108,20 +112,21 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = "notification"
-
 
 class Favorite(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="favorited_by")
+    item = models.ForeignKey(
+        Item, on_delete=models.CASCADE, related_name="favorited_by"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "favorite"
-        unique_together = ("user", "item")  # Cada usuário pode favoritar um item apenas uma vez
+        unique_together = (
+            "user",
+            "item",
+        )  # Cada usuário pode favoritar um item apenas uma vez
 
     def __str__(self):
         return f"{self.user.username} - {self.item.title}"
-
