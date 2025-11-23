@@ -1,9 +1,12 @@
 import os
-from django.db.models.signals import post_delete
+
+from django.contrib.auth.models import User
+from django.db.models.signals import post_delete, pre_delete
 from django.dispatch import receiver
 from storages.backends.s3boto3 import S3Boto3Storage
 from supabase import Client, create_client
-from .models import ItemPhoto
+
+from .models import ItemPhoto, UserProfile
 
 supabase: Client = create_client(
     os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY")
@@ -14,8 +17,6 @@ supabase: Client = create_client(
 def delete_file_on_itemphoto_delete(sender, instance, **kwargs):
     if instance.image:
         delete_item_photo_service(instance.image)
-
-
 
 
 def create_supabase_user(email, password, first_name="", last_name=""):
@@ -65,3 +66,32 @@ def delete_item_photo_service(image_url):
     except Exception as e:
         print(f"ERRO AO DELETAR FOTO DO STORAGE: {e}")
         raise e
+
+
+def delete_supabase_user(supabase_user_id):
+    """
+    Deleta um usuário no Supabase Auth usando a API Admin.
+    """
+    try:
+        if not supabase_user_id:
+            return
+
+        supabase.auth.admin.delete_user(str(supabase_user_id))
+        print(f"Usuário {supabase_user_id} deletado do Supabase com sucesso")
+
+    except Exception as e:
+        print(f"ERRO AO DELETAR USUÁRIO NO SUPABASE: {e}")
+        # Não levanta exceção para não bloquear a deleção do Django
+
+
+@receiver(pre_delete, sender=User)
+def delete_supabase_user_on_django_user_delete(sender, instance, **kwargs):
+    """
+    Signal para deletar o usuário do Supabase quando um usuário do Django for deletado.
+    """
+    try:
+        profile = UserProfile.objects.filter(user=instance).first()
+        if profile and profile.supabase_user_id:
+            delete_supabase_user(profile.supabase_user_id)
+    except Exception as e:
+        print(f"ERRO NO SIGNAL DE DELEÇÃO DO USUÁRIO: {e}")
