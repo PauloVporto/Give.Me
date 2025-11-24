@@ -162,6 +162,6 @@ FRONTEND_URL = "https://give-me.vercel.app"
 if os.getenv("TEST_ENV") == "true":
     try:
         DATABASES["default"].setdefault("OPTIONS", {})
-        DATABASES["default"]["OPTIONS"]["sslmode"] = os.getenv("DB_SSLMODE", "disable")
+        DATABASES["default"]["OPTIONS"]["sslmode"] = "disable"
     except KeyError as e:
         print(e)
