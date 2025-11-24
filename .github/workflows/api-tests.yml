@@ -100,7 +100,7 @@ jobs:
           DB_PORT: 5432 
           SUPABASE_URL: "http://dummy.local"
           SUPABASE_SERVICE_KEY: "dummy-key"
-          PGSSLMODE: disable
+          TEST_ENV: "true"
         run: |
           python -m pytest --cov=backend --cov-fail-under=34 --cov-report html
           
