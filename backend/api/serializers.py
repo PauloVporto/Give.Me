@@ -30,10 +30,11 @@ class ItemPhotoSerializer(serializers.ModelSerializer):
     def get_url(self, obj):
         if obj.image:
             if isinstance(obj.image, str):
-                return obj.image 
+                return obj.image
             else:
-               return None                 
+                return None
         return obj.url or ""
+
 
 class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,7 +52,13 @@ class NotificationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ["photo_url", "city", "bio", "notifications_enabled", "supabase_user_id"]
+        fields = [
+            "photo_url",
+            "city",
+            "bio",
+            "notifications_enabled",
+            "supabase_user_id",
+        ]
         read_only_fields = ["supabase_user_id"]
 
 
@@ -75,7 +82,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         last_name = validated_data.get("last_name", "")
 
         validated_data["username"] = email
-        user = User.objects.create_user(**validated_data)
 
         try:
             supabase_user_id = create_supabase_user(
@@ -85,11 +91,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 last_name=last_name,
             )
 
+            user = User.objects.create_user(**validated_data)
             UserProfile.objects.create(user=user, supabase_user_id=supabase_user_id)
         except Exception as e:
-            print(f"Aviso: Usuário criado no Django mas falhou no Supabase: {e}")
-            UserProfile.objects.create(user=user)
-
+            raise serializers.ValidationError(
+                {"email": "Erro ao criar conta. Tente novamente ou contate o suporte."}
+            )
         return user
 
 
@@ -144,7 +151,7 @@ class ItemSerializer(serializers.ModelSerializer):
     uploaded_photos = serializers.ListField(
         child=serializers.ImageField(), write_only=True, required=False
     )
-    photos_id = serializers.SerializerMethodField() 
+    photos_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -169,7 +176,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "price",
             "trade_interest",
             "uploaded_photos",
-            "photos_id"
+            "photos_id",
         ]
         read_only_fields = [
             "user",
@@ -191,7 +198,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_photos_id(self, obj):
         return [photo.id for photo in obj.photos.all().order_by("position")]
-    
+
     def get_images(self, obj):
         return self.get_photos(obj)
 
@@ -202,10 +209,7 @@ class ItemSerializer(serializers.ModelSerializer):
         city_state = validated_data.pop("city_state", None)
 
         if city_name and city_state:
-            city, created = City.objects.get_or_create(
-                name=city_name,
-                state=city_state
-            )
+            city, created = City.objects.get_or_create(name=city_name, state=city_state)
             validated_data["city"] = city
 
         item = Item.objects.create(**validated_data)
@@ -223,7 +227,6 @@ class ItemSerializer(serializers.ModelSerializer):
                 )
 
         return item
-    
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
