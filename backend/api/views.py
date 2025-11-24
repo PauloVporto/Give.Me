@@ -6,7 +6,7 @@ from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from .services import upload_item_photo
+
 from .models import Category, City, Favorite, Item, ItemPhoto, UserProfile
 from .serializers import (
     CategorySerializer,
@@ -18,6 +18,7 @@ from .serializers import (
     UserProfileSerializer,
     UserSerializer,
 )
+from .services import upload_item_photo
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -149,7 +150,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
 class ListCategoriesView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class CreateCategoryView(generics.CreateAPIView):
@@ -213,7 +214,9 @@ def upload_item_photos(request, item_id):
     for index, photo in enumerate(photos_to_upload, start=current_count + 1):
         filename = f"items/{item.id}_{photo.name}"
         image_url = upload_item_photo(photo, filename)
-        item_photo = ItemPhoto.objects.create(item=item, image=image_url, position=index)
+        item_photo = ItemPhoto.objects.create(
+            item=item, image=image_url, position=index
+        )
         created_photos.append(item_photo)
 
     serializer = ItemPhotoSerializer(created_photos, many=True)
@@ -227,10 +230,8 @@ def upload_item_photos(request, item_id):
     )
 
 
-
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated, IsOwner])
-
 def delete_item_photo(request, photo_id):
     try:
         photo = ItemPhoto.objects.get(id=photo_id, item__user=request.user)
@@ -247,10 +248,13 @@ def delete_item_photo(request, photo_id):
 
 class ListFavoritesView(generics.ListAPIView):
     serializer_class = FavoriteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Favorite.objects.filter(user=self.request.user).order_by("-created_at")
+        user = self.request.user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user).order_by("-created_at")
+        return Favorite.objects.none()
 
 
 class AddFavoriteView(generics.CreateAPIView):
