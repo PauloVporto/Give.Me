@@ -163,7 +163,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class ListCategoriesView(generics.ListAPIView):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
 
