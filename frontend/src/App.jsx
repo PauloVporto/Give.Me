@@ -35,25 +35,42 @@ function App() {
 export default App 
 */
 
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Profile from "./pages/Profile";
-import MyItems from "./pages/MyItems";
-import Favorites from "./pages/Favorites";
 import { AlertProvider } from "./contexts/AlertContext";
-
+import { CircularProgress, Box } from "@mui/material";
 import "./styles/global.css";
 
-import ListItem from "./pages/ListItem";
-import ProductDetail from "./pages/ProductDetail";
-import EditItem from "./pages/EditItem";
-import Chat from "./pages/Chat";
+// Lazy loading das páginas
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Profile = lazy(() => import("./pages/Profile"));
+const MyItems = lazy(() => import("./pages/MyItems"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const ListItem = lazy(() => import("./pages/ListItem"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const EditItem = lazy(() => import("./pages/EditItem"));
+const Chat = lazy(() => import("./pages/Chat"));
+
+// Componente de carregamento
+const LoadingFallback = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '100vh',
+      bgcolor: '#f5f5f5'
+    }}
+  >
+    <CircularProgress size={50} sx={{ color: '#009959ff' }} />
+  </Box>
+);
+
+// Eager loading apenas do ProtectedRoute (usado em múltiplas rotas)
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Logout() {
   localStorage.clear();
@@ -69,7 +86,8 @@ export default function App() {
   return (
     <AlertProvider>
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
           {/* públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Logout />} />
@@ -130,6 +148,7 @@ export default function App() {
           {/* fallback */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </AlertProvider>
   );
