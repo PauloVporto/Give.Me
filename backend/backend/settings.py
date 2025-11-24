@@ -154,58 +154,8 @@ else:
     
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS Configuration
 CORS_ALLOW_CREDENTIALS = True
-
-# Allow specific origins from environment variable or use defaults
-CORS_ALLOWED_ORIGINS = [
-    "https://give-me.vercel.app",
-    "https://giveme-production.up.railway.app",
-    "http://localhost:5173",
-    "http://localhost:8000",
-]
-
-# Allow all Vercel preview deployments
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.vercel\.app$",
-]
-
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
-
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-]
-
-# Expose headers that the frontend might need
-CORS_EXPOSE_HEADERS = [
-    'content-type',
-    'x-csrftoken',
-]
-
-# Security settings for production
-if not DEBUG:
-    SECURE_SSL_REDIRECT = False  # Railway handles SSL
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 FRONTEND_URL = "https://give-me.vercel.app"
 
