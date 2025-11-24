@@ -33,6 +33,8 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,  # Limita queries grandes
 }
 
 SIMPLE_JWT = {
@@ -95,8 +97,13 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PWD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
-        "OPTIONS": {"sslmode": "require"},
-        "CONN_MAX_AGE": 60,
+        "OPTIONS": {
+            "sslmode": "require",
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30000",  # 30 segundos
+        },
+        "CONN_MAX_AGE": 600,  # 10 minutos - reutiliza conexões
+        "CONN_HEALTH_CHECKS": True,  # Verifica saúde da conexão
     }
 }
 

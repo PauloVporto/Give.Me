@@ -95,7 +95,11 @@ class ReadItemView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Item.objects.all()
+        return (
+            Item.objects
+            .select_related('user', 'user__userprofile', 'city', 'category')
+            .prefetch_related('photos')
+        )
 
 
 class ReadItemsView(generics.ListAPIView):
@@ -106,7 +110,12 @@ class ReadItemsView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Item.objects.all()
+        return (
+            Item.objects
+            .select_related('user', 'city', 'category')  # Evita N+1 queries
+            .prefetch_related('photos')  # Carrega fotos de uma vez
+            .order_by('-created_at')
+        )
 
 
 class MyItemsView(generics.ListAPIView):
@@ -118,7 +127,13 @@ class MyItemsView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Item.objects.filter(user=user).order_by("-created_at")
+        return (
+            Item.objects
+            .filter(user=user)
+            .select_related('city', 'category')
+            .prefetch_related('photos')
+            .order_by('-created_at')
+        )
 
 
 class UserProfileView(generics.RetrieveAPIView):
@@ -253,7 +268,13 @@ class ListFavoritesView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
-            return Favorite.objects.filter(user=user).order_by("-created_at")
+            return (
+                Favorite.objects
+                .filter(user=user)
+                .select_related('item', 'item__user', 'item__city', 'item__category')
+                .prefetch_related('item__photos')
+                .order_by('-created_at')
+            )
         return Favorite.objects.none()
 
 
