@@ -31,7 +31,7 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class ListUsersView(generics.ListAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by('username')
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -183,14 +183,14 @@ class CreateCategoryView(generics.CreateAPIView):
 
 
 class ListCitiesView(generics.ListAPIView):
-    queryset = City.objects.all()
+    queryset = City.objects.all().order_by('name')
     serializer_class = CitySerializer
     permission_classes = [AllowAny]
 
 
 class SearchItemView(generics.ListAPIView):
     serializer_class = ItemSerializer
-    queryset = Item.objects.all()
+    queryset = Item.objects.all().order_by('-created_at')
     filter_backends = [filters.SearchFilter]
     search_fields = ["title"]
 
