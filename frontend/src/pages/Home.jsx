@@ -1,7 +1,6 @@
 import "../styles/Home.css";
-import { Link } from "react-router-dom";
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { Box, Stack, Chip, Typography, CircularProgress, Card, CardMedia, CardContent, CardActionArea, IconButton } from "@mui/material";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { Box, Stack, Chip, Typography } from "@mui/material";
 import { 
   Inventory as AllIcon,
   Laptop as ElectronicsIcon, 
@@ -11,13 +10,12 @@ import {
   Home as HomeIcon,
   Smartphone as PhoneIcon,
   Toys as ToysIcon,
-  Build as ToolsIcon,
-  Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon
+  Build as ToolsIcon
 } from "@mui/icons-material";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
-import { Navbar, fullUrl, LoadingContainer, EmptyState } from "../components/Base";
+import { Navbar, LoadingContainer, EmptyState } from "../components/Base";
+import ItemCard from "../components/ItemCard";
 
 // Mapeamento de ícones por categoria
 const categoryIcons = {
@@ -45,9 +43,6 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearch] = useState("");
   const [favoritedItems, setFavoritedItems] = useState(new Set());
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const observerTarget = useRef(null);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -88,7 +83,8 @@ export default function Home() {
 
         // Favorites
         if (token && responses[2] && !responses[2].error) {
-          const favoriteIds = new Set(responses[2].data.map(fav => fav.item.id));
+          const favData = Array.isArray(responses[2].data) ? responses[2].data : (responses[2].data?.results || []);
+          const favoriteIds = new Set(favData.map(fav => fav.item.id));
           setFavoritedItems(favoriteIds);
         }
       } catch (e) {
@@ -310,118 +306,14 @@ export default function Home() {
         {loading && <LoadingContainer />}
         {!loading && items.length === 0 && <EmptyState message="Sem anúncios ainda." />}
 
-        {!loading &&
-          items.map((it) => {
-            const cover = fullUrl(it.images?.[0]) || "/ImagEtc/SemFoto.png";
-            const slugOrId = it.slug || it.id;
-
-            return (
-              <Box key={it.id} className="product-item">
-                <Card sx={{ 
-                  borderRadius: 2, 
-                  boxShadow: '0 1px 6px rgba(0,0,0,0.08)', 
-                  position: 'relative',
-                  transition: 'transform 0.2s ease',
-                  '&:hover': {
-                    transform: 'translateY(-3px)'
-                  }
-                }}>
-                  {/* Botão de favorito */}
-                  <IconButton
-                    onClick={(e) => toggleFavorite(e, it.id)}
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      bgcolor: 'rgba(255, 255, 255, 0.9)',
-                      zIndex: 1,
-                      width: 32,
-                      height: 32,
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 255, 255, 1)',
-                      }
-                    }}
-                  >
-                    {favoritedItems.has(it.id) ? (
-                      <FavoriteIcon sx={{ color: '#e74c3c', fontSize: 20 }} />
-                    ) : (
-                      <FavoriteBorderIcon sx={{ color: '#666', fontSize: 20 }} />
-                    )}
-                  </IconButton>
-
-                  <CardActionArea component={Link} to={`/product/${slugOrId}`}>
-                    <CardMedia
-                      component="img"
-                      image={cover}
-                      alt={it.title || 'Item'}
-                      sx={{ height: 200, objectFit: 'cover' }}
-                      onError={(e) => (e.currentTarget.src = '/placeholder.png')}
-                    />
-                    <CardContent sx={{ p: 1.5 }}>
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          minHeight: '3em',
-                          mb: 1
-                        }}
-                      >
-                        {it.title || 'Sem título'}
-                      </Typography>
-
-                      <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: 0.5 }}>
-                        {it.type === 'Trade' && (
-                          <Chip 
-                            label="Troca" 
-                            size="small" 
-                            sx={{ 
-                              bgcolor: '#009970',
-                              color: '#fff',
-                              fontSize: 12
-                            }}
-                          />
-                        )}
-                        {it.type === 'Donation' && (
-                          <Chip 
-                            label="Doação" 
-                            size="small" 
-                            sx={{ 
-                              bgcolor: '#0288d1',
-                              color: '#fff',
-                              fontSize: 12
-                            }}
-                          />
-                        )}
-                        {it.type === 'Sell' && (
-                          <Chip 
-                            label="Venda" 
-                            size="small" 
-                            sx={{ 
-                              bgcolor: '#e43011ff',
-                              color: '#fff',
-                              fontSize: 12
-                            }}
-                          />
-                        )}
-                      </Stack>
-
-                      {it.city && (
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.813rem' }}>
-                          📍 {typeof it.city === 'string' ? it.city : `${it.city.name || ''}, ${it.city.state || ''}`}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Box>
-            );
-          })}
+        {!loading && items.map((item) => (
+          <ItemCard
+            key={item.id}
+            item={item}
+            isFavorited={favoritedItems.has(item.id)}
+            onToggleFavorite={toggleFavorite}
+          />
+        ))}
       </section>
     </div>
   );
