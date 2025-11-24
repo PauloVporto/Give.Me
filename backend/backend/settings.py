@@ -159,7 +159,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 FRONTEND_URL = "https://give-me.vercel.app"
 
-if any("pytest" in arg for arg in sys.argv):
+if os.getenv("TEST_ENV") == "true":
     try:
         DATABASES["default"].setdefault("OPTIONS", {})
         DATABASES["default"]["OPTIONS"]["sslmode"] = os.getenv("DB_SSLMODE", "disable")
