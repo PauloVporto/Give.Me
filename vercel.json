@@ -21,6 +21,8 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://giveme-production.up.railway.app"
+    "VITE_API_URL": "https://giveme-production.up.railway.app",
+    "VITE_SUPABASE_URL": "https://bthmznsfyejqqkvnluuu.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0aG16bnNmeWVqcXFrdm5sdXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYxNzA3NDcsImV4cCI6MjA3MTc0Njc0N30.Wgd1B4YQzs_UWlgxYI-QRV2YL1jWVgnFt9ddoETQYUU"
   }
 }
