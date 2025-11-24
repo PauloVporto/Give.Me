@@ -4,7 +4,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
      dependencies = [
-        ('api', '0008_alter_itemphoto_image'),
+        ('api', '0009_alter_notification_table'),
     ]
 
     operations = [
