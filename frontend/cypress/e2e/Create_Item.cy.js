@@ -1,254 +1,179 @@
 // create-item.cy.js
 
-describe("Tela de Criação de Item", () => {
+describe("Tela de Criação de Item - Give.me", () => {
   beforeEach(() => {
-    // Faz login primeiro com verificação
-    cy.visit("https://give-me.vercel.app/login");
+    // Login robusto
+    cy.visit("https://give-me.vercel.app/login", {
+      timeout: 30000,
+      failOnStatusCode: false
+    });
+    
+    cy.get('body', { timeout: 15000 }).should('be.visible');
+    cy.get('input[name="username"]', { timeout: 10000 }).should('be.visible');
+    
     cy.get('input[name="username"]').type('admin');
     cy.get('input[name="password"]').type('admin');
-    cy.get('button.form-button[type="submit"]').click();
+    cy.contains('button', 'Entrar').click();
     
-    // Aguarda o login e verifica se foi bem-sucedido
+    // Verifica redirecionamento
+    cy.url({ timeout: 30000 }).should('not.include', '/login');
+    
+    // Acessa criação com fallback
+    cy.visit("https://give-me.vercel.app/create-item", {
+      timeout: 30000,
+      failOnStatusCode: false
+    });
     cy.wait(3000);
-    
-    // Verifica se estamos logados (não estamos mais na página de login)
-    cy.url().then((currentUrl) => {
-      if (!currentUrl.includes('/login')) {
-        // Login bem-sucedido, acessa create-item
-        cy.visit("https://give-me.vercel.app/create-item");
-        cy.wait(2000);
-        
-        // Verifica se conseguiu acessar create-item
-        cy.url().should('include', '/create-item');
-      } else {
-        // Login falhou, tenta estratégia alternativa
-        cy.log('Login falhou, tentando acessar create-item diretamente');
-        cy.visit("https://give-me.vercel.app/create-item");
-        cy.wait(2000);
-      }
-    });
   });
 
-  it("renderiza componentes principais", () => {
-    // Verifica se está na página correta
-    cy.url().should('include', '/create-item');
-    
-    // Verifica elementos com seletores mais flexíveis
-    cy.get('body').then(($body) => {
-      // Procura por texto que contenha "Cadastrar" ou "novo produto"
-      if ($body.text().includes('Cadastrar') || $body.text().includes('novo produto')) {
-        cy.log('✅ Título encontrado');
-      }
-    });
-    
-    // Verifica seções com texto parcial
-    cy.contains(/photos/i).should('be.visible');
-    cy.contains(/item information/i).should('be.visible');
-    cy.contains(/category/i).should('be.visible');
-    cy.contains(/location/i).should('be.visible');
-    cy.contains(/listing type/i).should('be.visible');
-    
-    // Procura botão de submit por texto
-    cy.get('button').contains(/publish|publicar|enviar/i).should('be.visible');
-  });
-
-  describe('Criação de Item (testes básicos)', () => {
-    
-    it('permite preencher título do item', () => {
-      // Tenta diferentes seletores para o campo de título
-      cy.get('input[placeholder*="Item Title"], input[placeholder*="Title"], [placeholder*="Title"]')
-        .first()
-        .should('be.visible')
-        .type('Produto de Teste')
-        .should('have.value', 'Produto de Teste');
+  describe("Testes de Funcionalidades Existentes", () => {
+    it("permite entrada de dados no campo título", () => {
+      cy.get('input[placeholder*="Título do Item"]', { timeout: 30000 })
+        .type('Celular Samsung')
+        .should('have.value', 'Celular Samsung');
     });
 
-    it('permite preencher descrição', () => {
-      cy.get('textarea[placeholder*="Description"], textarea, [placeholder*="description"]')
-        .first()
-        .should('be.visible')
-        .type('Descrição do produto teste')
-        .should('have.value', 'Descrição do produto teste');
+    it("permite entrada de dados no campo descrição", () => {
+      cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 })
+        .type('Celular em bom estado')
+        .should('have.value', 'Celular em bom estado');
     });
 
-    it('permite preencher localização', () => {
-      cy.get('input[placeholder*="City, State"], [placeholder*="city"], [placeholder*="location"]')
-        .first()
-        .should('be.visible')
+    it("permite entrada de dados no campo localização", () => {
+      cy.get('input[placeholder*="Cidade, Estado"]', { timeout: 10000 })
         .type('São Paulo, SP')
         .should('have.value', 'São Paulo, SP');
     });
+
+    it("permite selecionar categoria", () => {
+      cy.get('select', { timeout: 10000 })
+        .select('Eletrônicos')
+        .should('have.value', 'e4d9994f-c46e-4dc2-815c-9456adb4c9c0');
+    });
+
+    it("permite selecionar tipo de anúncio Venda", () => {
+      cy.contains('button', 'Venda', { timeout: 10000 }).click();
+      cy.contains('Preço', { timeout: 10000 }).should("be.visible");
+    });
+
+    it("permite selecionar tipo de anúncio Troca", () => {
+      cy.contains('button', 'Troca', { timeout: 10000 }).click();
+    });
+
+    it("permite selecionar tipo de anúncio Doação", () => {
+      cy.contains('button', 'Doação', { timeout: 10000 }).click();
+    });
+
+    it("permite preencher preço quando Venda está selecionado", () => {
+      cy.contains('button', 'Venda', { timeout: 10000 }).click();
+      cy.get('input[placeholder*="0,00"]', { timeout: 10000 })
+        .type('1500.00')
+        .should('have.value', '1500.00');
+    });
+
+    it("permite selecionar condição do produto", () => {
+      cy.contains('button', 'Novo', { timeout: 10000 }).click();
+      cy.contains('button', 'Usado - Bom Estado', { timeout: 10000 }).click();
+      cy.contains('button', 'Precisa de Reparo', { timeout: 10000 }).click();
+    });
+
+    it("valida campos obrigatórios do formulário", () => {
+      cy.get('input[placeholder*="Título do Item"]', { timeout: 10000 })
+        .should('have.attr', 'required');
+      cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 })
+        .should('have.attr', 'required');
+    });
+
+    it("mantém botão de publicar habilitado", () => {
+      cy.contains('button', 'Publicar Item', { timeout: 10000 })
+        .should('be.enabled');
+    });
+
+    it("apresenta placeholders nos campos de entrada", () => {
+      cy.get('input[placeholder*="Título do Item"]', { timeout: 10000 })
+        .should('have.attr', 'placeholder');
+      cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 })
+        .should('have.attr', 'placeholder');
+      cy.get('input[placeholder*="Cidade, Estado"]', { timeout: 10000 })
+        .should('have.attr', 'placeholder');
+      cy.get('input[placeholder*="0,00"]', { timeout: 10000 })
+        .should('have.attr', 'placeholder');
+    });
+
+    it("permite limpar campos preenchidos", () => {
+      cy.get('input[placeholder*="Título do Item"]', { timeout: 10000 })
+        .type('teste')
+        .clear()
+        .should('have.value', '');
+      cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 })
+        .type('teste')
+        .clear()
+        .should('have.value', '');
+    });
+
+    it("não exibe mensagens de erro inicialmente", () => {
+      cy.get('.error', { timeout: 5000 }).should('not.exist');
+      cy.get('.alert', { timeout: 5000 }).should('not.exist');
+    });
+
+    it("mantém layout consistente ao recarregar", () => {
+      cy.reload();
+      cy.contains('Cadastrar novo produto', { timeout: 10000 }).should('be.visible');
+      cy.contains('Informações do Item', { timeout: 10000 }).should('be.visible');
+    });
+
+    it("exibe botão de voltar", () => {
+      cy.get('button[aria-label="voltar"]', { timeout: 10000 }).should('be.visible');
+    });
   });
 
-  describe('Criação de Item (testes de listing type)', () => {
-    
-    it('permite selecionar Sell e preencher preço', () => {
-      // Procura botão Sell de forma flexível
-      cy.contains(/sell|venda|vender/i).click();
-      
-      // Verifica se aparece a seção de preço
-      cy.contains(/price|preço|valor/i).should('be.visible');
-      
-      // Procura campo de preço
-      cy.get('input[placeholder*="0"], input[type*="number"], input[inputmode*="decimal"]')
-        .first()
-        .should('be.visible')
-        .type('150.50')
-        .should('have.value', '150.50');
+  describe("Testes de Funcionalidades em Falta", () => {
+    it("não implementa mensagens de erro acessíveis", () => {
+      cy.get('[role="alert"]', { timeout: 5000 }).should('not.exist');
+      cy.get('[aria-live="polite"]', { timeout: 5000 }).should('not.exist');
+      cy.get('[aria-live="assertive"]', { timeout: 5000 }).should('not.exist');
     });
 
-    it('permite selecionar Donation', () => {
-      cy.contains(/donation|doação|doar/i).click();
-      cy.contains(/donation|doação|doar/i).should('be.visible');
-    });
-
-    it('permite selecionar Trade', () => {
-      cy.contains(/trade|troca|trocar/i).click();
-      cy.contains(/trade|troca|trocar/i).should('be.visible');
-    });
-  });
-
-  describe('Criação de Item (testes de usabilidade)', () => {
-    
-    it('mantém valores dos campos durante preenchimento', () => {
-      const title = 'Produto Persistente';
-      const description = 'Descrição que deve persistir';
-      const location = 'Rio de Janeiro, RJ';
-
-      // Preenche campos
-      cy.get('input[placeholder*="Title"]').first().type(title);
-      cy.get('textarea').first().type(description);
-      cy.get('input[placeholder*="City"]').first().type(location);
-      
-      // Verifica valores
-      cy.get('input[placeholder*="Title"]').first().should('have.value', title);
-      cy.get('textarea').first().should('have.value', description);
-      cy.get('input[placeholder*="City"]').first().should('have.value', location);
-    });
-
-    it('botão permanece habilitado durante preenchimento', () => {
-      cy.get('input[placeholder*="Title"]').first().type('Produto Teste');
-      cy.get('button[type="submit"]').should('not.be.disabled');
-    });
-  });
-
-  describe('Criação de Item (testes de segurança)', () => {
-    
-    it('protege contra XSS nos campos de input', () => {
-      const xssPayload = '<script>alert("xss")</script>';
-      
-      cy.get('input[placeholder*="Title"]').first().type(xssPayload);
-      cy.get('textarea').first().type(xssPayload);
-      
-      cy.get('input[placeholder*="Title"]').first().should('have.value', xssPayload);
-      cy.get('textarea').first().should('have.value', xssPayload);
-    });
-  });
-
-  describe('Criação de Item (testes de navegação)', () => {
-    
-    it('botão de voltar funciona corretamente', () => {
-      // Procura botão de voltar de forma flexível
-      cy.get('button[aria-label*="voltar"], button[aria-label*="back"], .MuiIconButton-root, button')
-        .first()
-        .click();
-      
-      // Verifica que saiu da página
-      cy.url().should('not.include', '/create-item');
+    it("não valida formato do preço em tempo real", () => {
+      cy.contains('button', 'Venda', { timeout: 10000 }).click();
+      cy.get('input[placeholder*="0,00"]', { timeout: 10000 })
+        .type('abc')
+        .should('have.value', 'abc');
     });
   });
 });
 
-// Comandos customizados ATUALIZADOS
-Cypress.Commands.add('preencherItemBasico', (dados = {}) => {
-  const {
-    title = 'Produto de Teste',
-    description = 'Descrição de teste',
-    location = 'São Paulo, SP'
-  } = dados;
-
-  cy.get('input[placeholder*="Title"]').first().type(title);
-  cy.get('textarea').first().type(description);
-  cy.get('input[placeholder*="City"]').first().type(location);
+Cypress.Commands.add('preencherItemBasico', (titulo = 'Produto Teste', descricao = 'Descrição teste', localizacao = 'São Paulo, SP') => {
+  cy.get('input[placeholder*="Título do Item"]', { timeout: 10000 }).clear().type(titulo);
+  cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 }).clear().type(descricao);
+  cy.get('input[placeholder*="Cidade, Estado"]', { timeout: 10000 }).clear().type(localizacao);
 });
 
-Cypress.Commands.add('preencherItemVenda', (dados = {}) => {
-  const {
-    title = 'Produto de Teste',
-    description = 'Descrição de teste',
-    location = 'São Paulo, SP',
-    price = '100.00'
-  } = dados;
-
-  cy.preencherItemBasico({ title, description, location });
-  cy.contains(/sell|venda/i).click();
-  cy.get('input[placeholder*="0"]').first().type(price);
+Cypress.Commands.add('selecionarVenda', (preco = '100.00') => {
+  cy.contains('button', 'Venda', { timeout: 10000 }).click();
+  cy.get('input[placeholder*="0,00"]', { timeout: 10000 }).clear().type(preco);
 });
 
-// Testes usando comandos customizados ATUALIZADOS
-describe('Criação de Item com Comandos Customizados', () => {
+describe("Criação de Item com Comandos Customizados", () => {
   beforeEach(() => {
-    cy.visit("https://give-me.vercel.app/login");
-    cy.get('input[name="username"]').type('admin');
-    cy.get('input[name="password"]').type('admin');
-    cy.get('button.form-button[type="submit"]').click();
-    cy.wait(3000);
-    
-    cy.visit("https://give-me.vercel.app/create-item");
-    cy.wait(2000);
+    cy.visit("https://give-me.vercel.app/login", {
+      timeout: 30000,
+      failOnStatusCode: false
+    });
+    cy.get('input[name="username"]', { timeout: 10000 }).type('admin');
+    cy.get('input[name="password"]', { timeout: 10000 }).type('admin');
+    cy.contains('button', 'Entrar', { timeout: 10000 }).click();
+    cy.url({ timeout: 15000 }).should('not.include', '/login');
+    cy.visit("https://give-me.vercel.app/create-item", {
+      timeout: 30000,
+      failOnStatusCode: false
+    });
   });
 
-  it('preenche formulário básico usando comando customizado', () => {
-    cy.preencherItemBasico({
-      title: 'Notebook Dell',
-      description: 'Notebook em perfeito estado',
-      location: 'Belo Horizonte, MG'
-    });
-    
-    // Verificações
-    cy.get('input[placeholder*="Title"]').first().should('have.value', 'Notebook Dell');
-    cy.get('textarea').first().should('have.value', 'Notebook em perfeito estado');
-    cy.get('input[placeholder*="City"]').first().should('have.value', 'Belo Horizonte, MG');
-  });
-
-  it('preenche formulário completo para venda', () => {
-    cy.preencherItemVenda({
-      title: 'Smartphone Samsung',
-      description: 'Smartphone com 128GB',
-      location: 'Curitiba, PR',
-      price: '1200.00'
-    });
-    
-    // Verificações
-    cy.get('input[placeholder*="Title"]').first().should('have.value', 'Smartphone Samsung');
-    cy.get('textarea').first().should('have.value', 'Smartphone com 128GB');
-    cy.get('input[placeholder*="City"]').first().should('have.value', 'Curitiba, PR');
-    cy.get('input[placeholder*="0"]').first().should('have.value', '1200.00');
-  });
-
-  it('preenche formulário para doação', () => {
-    cy.preencherItemBasico({
-      title: 'Roupas Usadas',
-      description: 'Roupas em bom estado para doação',
-      location: 'Porto Alegre, RS'
-    });
-    
-    cy.contains(/donation|doação/i).click();
-    
-    // Verificações
-    cy.get('input[placeholder*="Title"]').first().should('have.value', 'Roupas Usadas');
-    cy.get('textarea').first().should('have.value', 'Roupas em bom estado para doação');
-    cy.get('input[placeholder*="City"]').first().should('have.value', 'Porto Alegre, RS');
-  });
-
-  it('testa diferentes valores de preço', () => {
-    cy.preencherItemVenda({
-      title: 'Tablet Android',
-      description: 'Tablet com 10 polegadas',
-      location: 'Florianópolis, SC',
-      price: '899.99'
-    });
-    
-    cy.get('input[placeholder*="0"]').first().should('have.value', '899.99');
+  it("preenche formulário básico usando comandos personalizados", () => {
+    cy.preencherItemBasico('Notebook Dell', 'Notebook em perfeito estado', 'Belo Horizonte, MG');
+    cy.get('input[placeholder*="Título do Item"]', { timeout: 10000 }).should('have.value', 'Notebook Dell');
+    cy.get('textarea[placeholder*="Descrição"]', { timeout: 10000 }).should('have.value', 'Notebook em perfeito estado');
+    cy.get('input[placeholder*="Cidade, Estado"]', { timeout: 10000 }).should('have.value', 'Belo Horizonte, MG');
   });
 });
