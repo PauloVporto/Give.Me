@@ -1,20 +1,28 @@
 import uuid
+
+from api.models import UserProfile
 from django.db import connection, transaction
 from django.utils import timezone
 from rest_framework import permissions
-from rest_framework.views import APIView
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
+from rest_framework.views import APIView
+
 from .models import Conversation, Message
+
 
 def my_supa_uuid(request):
     up = getattr(request.user, "userprofile", None)
     if not up or not up.supabase_user_id:
-        raise ValidationError("Vincule seu supabase_user_id no perfil antes de usar o chat.")
+        raise ValidationError(
+            "Vincule seu supabase_user_id no perfil antes de usar o chat."
+        )
     return up.supabase_user_id
+
 
 def is_participant(conv, me):
     return str(conv.user_a_id) == str(me) or str(conv.user_b_id) == str(me)
+
 
 class CreateConversationView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -28,13 +36,26 @@ class CreateConversationView(APIView):
         if str(me) == str(peer):
             raise ValidationError("Conversa 1:1 requer usuários distintos.")
 
+        # Validar que o peer existe no Supabase (auth.users)
+        with connection.cursor() as cur:
+            cur.execute("SELECT id FROM auth.users WHERE id = %s", [peer])
+            if not cur.fetchone():
+                raise ValidationError(
+                    {"peer_supabase_user_id": "Usuário não encontrado no Supabase."}
+                )
+
         # Tenta achar conversa existente (independe da ordem)
-        existing = list(Conversation.objects.raw("""
+        existing = list(
+            Conversation.objects.raw(
+                """
             select * from conversations
              where (user_a_id = %s and user_b_id = %s)
                 or (user_a_id = %s and user_b_id = %s)
              limit 1
-        """, [me, peer, peer, me]))
+        """,
+                [me, peer, peer, me],
+            )
+        )
 
         if existing:
             c = existing[0]
@@ -42,13 +63,24 @@ class CreateConversationView(APIView):
             conv_id = str(uuid.uuid4())
             a, b = sorted([str(me), str(peer)])
             with connection.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     insert into conversations (id, user_a_id, user_b_id, created_at, last_message_at)
                     values (%s, %s, %s, now(), null)
-                """, [conv_id, a, b])
+                """,
+                    [conv_id, a, b],
+                )
             c = Conversation.objects.get(pk=conv_id)
 
-        return Response({"id": str(c.id), "user_a_id": str(c.user_a_id), "user_b_id": str(c.user_b_id)}, status=201)
+        return Response(
+            {
+                "id": str(c.id),
+                "user_a_id": str(c.user_a_id),
+                "user_b_id": str(c.user_b_id),
+            },
+            status=201,
+        )
+
 
 class SendMessageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -72,17 +104,29 @@ class SendMessageView(APIView):
         now = timezone.now()
 
         with connection.cursor() as cur:
-            cur.execute("""
+            cur.execute(
+                """
                 insert into messages (id, conversation_id, sender_id, body, sent_at)
                 values (%s, %s, %s, %s, %s)
-            """, [msg_id, str(conv.id), str(me), body, now])
-            cur.execute("update conversations set last_message_at = %s where id = %s",
-                        [now, str(conv.id)])
+            """,
+                [msg_id, str(conv.id), str(me), body, now],
+            )
+            cur.execute(
+                "update conversations set last_message_at = %s where id = %s",
+                [now, str(conv.id)],
+            )
 
         return Response(
-            {"id": msg_id, "conversation_id": str(conv.id), "sender_id": str(me), "body": body, "sent_at": now},
-            status=201
+            {
+                "id": msg_id,
+                "conversation_id": str(conv.id),
+                "sender_id": str(me),
+                "body": body,
+                "sent_at": now,
+            },
+            status=201,
         )
+
 
 class ListMessagesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -97,8 +141,67 @@ class ListMessagesView(APIView):
         if not is_participant(conv, me):
             raise PermissionDenied("Você não participa desta conversa.")
 
-        rows = Message.objects.filter(conversation_id=conversation_id).order_by("-sent_at")[:200]
-        return Response([{
-            "id": str(r.id), "sender_id": str(r.sender_id),
-            "body": r.body, "sent_at": r.sent_at, "read_at": r.read_at
-        } for r in rows])
+        rows = Message.objects.filter(conversation_id=conversation_id).order_by(
+            "-sent_at"
+        )[:200]
+        return Response(
+            [
+                {
+                    "id": str(r.id),
+                    "sender_id": str(r.sender_id),
+                    "body": r.body,
+                    "sent_at": r.sent_at,
+                    "read_at": r.read_at,
+                }
+                for r in rows
+            ]
+        )
+
+
+class ListConversationsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        me = my_supa_uuid(request)
+
+        # Buscar conversas onde o usuário participa
+        conversations = list(
+            Conversation.objects.raw(
+                """
+            select * from conversations
+             where user_a_id = %s or user_b_id = %s
+             order by last_message_at desc nulls last, created_at desc
+        """,
+                [me, me],
+            )
+        )
+
+        result = []
+        for conv in conversations:
+            # Determinar o outro usuário
+            other_user_id = (
+                conv.user_b_id if str(conv.user_a_id) == str(me) else conv.user_a_id
+            )
+
+            # Buscar nome do outro usuário
+            try:
+                profile = UserProfile.objects.select_related("user").get(
+                    supabase_user_id=other_user_id
+                )
+                other_user_name = profile.user.first_name or profile.user.username
+            except UserProfile.DoesNotExist:
+                other_user_name = "Usuário"
+
+            result.append(
+                {
+                    "id": str(conv.id),
+                    "user_a_id": str(conv.user_a_id),
+                    "user_b_id": str(conv.user_b_id),
+                    "created_at": conv.created_at,
+                    "last_message_at": conv.last_message_at,
+                    "other_user_id": str(other_user_id),
+                    "other_user_name": other_user_name,
+                }
+            )
+
+        return Response(result)

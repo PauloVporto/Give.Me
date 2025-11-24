@@ -2,21 +2,23 @@ import traceback
 
 from api.permissions import IsAdmin, IsAdminOrOwner, IsOwner
 from django.contrib.auth.models import User
-from rest_framework import generics, status
+from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import Category, City, Item, ItemPhoto, UserProfile
+from .models import Category, City, Favorite, Item, ItemPhoto, UserProfile
 from .serializers import (
     CategorySerializer,
     CitySerializer,
+    FavoriteSerializer,
     ItemPhotoSerializer,
     ItemSerializer,
     UserCreateSerializer,
     UserProfileSerializer,
     UserSerializer,
 )
+from .services import upload_item_photo
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -56,7 +58,6 @@ class CreateItemView(generics.CreateAPIView):
         try:
             serializer.save(user=self.request.user, uploaded_photos=photos)
         except Exception as e:
-
             print(f"Erro ao criar item: {str(e)}")
             print(traceback.format_exc())
             raise
@@ -67,7 +68,7 @@ class DeleteItemView(generics.DestroyAPIView):
     http_method_names = ["delete"]
     description = "Endpoint for deleting an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -76,10 +77,10 @@ class DeleteItemView(generics.DestroyAPIView):
 
 class UpdateItemView(generics.UpdateAPIView):
     name = "Update Item"
-    http_method_names = ["put", "patch"]
+    http_method_names = ["put", "patch", "get"]
     description = "Endpoint for updating an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
@@ -91,11 +92,10 @@ class ReadItemView(generics.RetrieveAPIView):
     http_method_names = ["get"]
     description = "Endpoint for reading an item."
     serializer_class = ItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        user = self.request.user
-        return Item.objects.filter(user=user)
+        return Item.objects.all()
 
 
 class ReadItemsView(generics.ListAPIView):
@@ -107,6 +107,18 @@ class ReadItemsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Item.objects.all()
+
+
+class MyItemsView(generics.ListAPIView):
+    name = "My Items"
+    http_method_names = ["get"]
+    description = "Endpoint for reading items of authenticated user."
+    serializer_class = ItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Item.objects.filter(user=user).order_by("-created_at")
 
 
 class UserProfileView(generics.RetrieveAPIView):
@@ -138,7 +150,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
 class ListCategoriesView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdmin]
+    permission_classes = [AllowAny]
 
 
 class CreateCategoryView(generics.CreateAPIView):
@@ -159,6 +171,13 @@ class ListCitiesView(generics.ListAPIView):
     queryset = City.objects.all()
     serializer_class = CitySerializer
     permission_classes = [AllowAny]
+
+
+class SearchItemView(generics.ListAPIView):
+    serializer_class = ItemSerializer
+    queryset = Item.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["title"]
 
 
 @api_view(["POST"])
@@ -193,7 +212,11 @@ def upload_item_photos(request, item_id):
 
     created_photos = []
     for index, photo in enumerate(photos_to_upload, start=current_count + 1):
-        item_photo = ItemPhoto.objects.create(item=item, image=photo, position=index)
+        filename = f"items/{item.id}_{photo.name}"
+        image_url = upload_item_photo(photo, filename)
+        item_photo = ItemPhoto.objects.create(
+            item=item, image=image_url, position=index
+        )
         created_photos.append(item_photo)
 
     serializer = ItemPhotoSerializer(created_photos, many=True)
@@ -221,3 +244,59 @@ def delete_item_photo(request, photo_id):
             {"error": "Foto não encontrada ou você não tem permissão."},
             status=status.HTTP_404_NOT_FOUND,
         )
+
+
+class ListFavoritesView(generics.ListAPIView):
+    serializer_class = FavoriteSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user).order_by("-created_at")
+        return Favorite.objects.none()
+
+
+class AddFavoriteView(generics.CreateAPIView):
+    serializer_class = FavoriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        item_id = request.data.get("item_id")
+
+        existing_favorite = Favorite.objects.filter(
+            user=request.user, item_id=item_id
+        ).first()
+
+        if existing_favorite:
+            serializer = self.get_serializer(existing_favorite)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return super().create(request, *args, **kwargs)
+
+
+class RemoveFavoriteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def delete(self, request, item_id):
+        try:
+            favorite = Favorite.objects.get(user=request.user, item_id=item_id)
+            favorite.delete()
+            return Response(
+                {"message": "Item removido dos favoritos."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Favorite.DoesNotExist:
+            return Response(
+                {"error": "Favorito não encontrado."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def check_favorite(request, item_id):
+    is_favorited = Favorite.objects.filter(user=request.user, item_id=item_id).exists()
+    return Response({"is_favorited": is_favorited})

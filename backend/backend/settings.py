@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "api",
     "chat",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -87,6 +88,18 @@ DATABASES = {
         "CONN_MAX_AGE": 60,
     }
 }
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.getenv("SUPABASE_SECRET_KEY")
+AWS_S3_ENDPOINT_URL = os.getenv("SUPABASE_ENDPOINT_URL")
+AWS_STORAGE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
+AWS_S3_CUSTOM_DOMAIN = os.getenv("SUPABASE_CUSTOM_DOMAIN")
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_DEFAULT_ACL = None
+AWS_S3_REGION_NAME = "sa-east-1"
+MEDIA_URL = "https://" + AWS_S3_CUSTOM_DOMAIN + "/"
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {

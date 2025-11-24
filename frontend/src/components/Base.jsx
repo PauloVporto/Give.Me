@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -22,7 +22,9 @@ import {
   FiShoppingCart,
   FiPlus,
   FiCodesandbox,
+  FiMessageCircle,
 } from "react-icons/fi";
+import { ACCESS_TOKEN } from "../constants";
 
 /* -------------------------------------------------------------------------- */
 /*                               CONFIG GERAL                                 */
@@ -44,21 +46,36 @@ export function TopNav({ activePage = "home", onSearch }) {
   const location = useLocation();
   const [searchValue, setSearchValue] = useState("");
 
+  // Verificar se o usuário está autenticado
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    return !!token;
+  });
+
+  // Atualizar isAuthenticated quando a localização mudar (após login/logout)
+  useEffect(() => {
+    const token = localStorage.getItem(ACCESS_TOKEN);
+    setIsAuthenticated(!!token);
+  }, [location.pathname]);
+
   const getActiveTab = () => {
     const path = location.pathname || "";
-    // favorites -> index 0, profile (and nested) -> index 1
-    if (path === "/favorites" || path.startsWith("/favorites/")) return 0;
-    if (path === "/profile" || path.startsWith("/profile/")) return 1;
-    // otherwise no tab selected
+    // chat -> index 0, favorites -> index 1, profile -> index 2
+    if (path === "/chat" || path.startsWith("/chat/")) return 0;
+    if (path === "/favorites" || path.startsWith("/favorites/")) return 1;
+    if (path === "/profile" || path.startsWith("/profile/")) return 2;
     return false;
   };
 
   const handleTabChange = (_, newValue) => {
     switch (newValue) {
       case 0:
-        navigate("/favorites");
+        navigate("/chat");
         break;
       case 1:
+        navigate("/favorites");
+        break;
+      case 2:
         navigate("/profile");
         break;
       default:
@@ -83,9 +100,9 @@ export function TopNav({ activePage = "home", onSearch }) {
       <AppBar
         position="fixed"
         sx={{
-          backgroundColor: "#e7fff1dc",
-          color: "#222",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          backgroundColor: "#009959ff",
+          color: "#fff",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
           top: 0,
           zIndex: 1100,
         }}
@@ -109,7 +126,7 @@ export function TopNav({ activePage = "home", onSearch }) {
               to="/"
               sx={{
                 fontWeight: 700,
-                color: "#222",
+                color: "#fff",
                 textDecoration: "none",
                 mr: 0,
                 flexShrink: 0,
@@ -131,14 +148,18 @@ export function TopNav({ activePage = "home", onSearch }) {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "20px",
-                    backgroundColor: "#f5f5f5",
+                    backgroundColor: "#fff",
                     transition: "all 0.2s",
-                    "& fieldset": { border: "none" },
-                    "&:hover": { backgroundColor: "#eeeeee" },
+                    "& fieldset": { border: "1px solid rgba(0,0,0,0.1)" },
+                    "&:hover": { 
+                      backgroundColor: "#fff",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                      "& fieldset": { border: "1px solid rgba(0,0,0,0.2)" },
+                    },
                     "&.Mui-focused": {
                       backgroundColor: "#fff",
-                      boxShadow: "0 0 0 2px rgba(34,197,94,0.2)",
-                      "& fieldset": { border: "1px solid #22c55e" },
+                      boxShadow: "0 0 0 3px rgba(0,0,0,0.1)",
+                      "& fieldset": { border: "2px solid rgba(0,0,0,0.3)" },
                     },
                   },
                 }}
@@ -155,65 +176,135 @@ export function TopNav({ activePage = "home", onSearch }) {
 
           {/* RIGHT ACTIONS: kept outside the constrained left container so it can sit flush to the right edge */}
           <Box sx={{ display: "flex", gap: 1, alignItems: "center", pr: { xs: 1, md: 3 } }}>
-            <Tabs
-              value={getActiveTab()}
-              onChange={handleTabChange}
-              sx={{
-                mr: 1,
-                "& .MuiTab-root": {
-                  minHeight: "64px",
-                  color: "#666",
-                  fontWeight: 500,
-                  textTransform: "none",
-                  fontSize: "0.95rem",
-                  minWidth: "90px",
-                },
-                "& .Mui-selected": { color: "#28a745 !important", fontWeight: 600 },
-                "& .MuiTabs-indicator": { backgroundColor: "#28a745", height: 3 },
-              }}
-            >
-              <Tab icon={<FiHeart size={18} />} iconPosition="start" label="Favoritos" />
-              <Tab icon={<FiUser size={18} />} iconPosition="start" label="Perfil" />
-            </Tabs>
+            {isAuthenticated ? (
+              <>
+                {/* HEADER PARA USUÁRIOS LOGADOS */}
+                <Tabs
+                  value={getActiveTab()}
+                  onChange={handleTabChange}
+                  sx={{
+                    mr: 1,
+                    "& .MuiTab-root": {
+                      minHeight: "44px",
+                      height: "44px",
+                      color: "rgba(255,255,255,0.8)",
+                      fontWeight: 500,
+                      textTransform: "none",
+                      fontSize: "0.95rem",
+                      minWidth: "90px",
+                      borderRadius: "10px",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        color: "#fff",
+                        backgroundColor: "rgba(255,255,255,0.5)",
+                        transform: "translateY(-2px)",
+                      },
+                    },
+                    "& .Mui-selected": { 
+                      color: "#fff !important", 
+                      fontWeight: 600,
+                      backgroundColor: "rgba(255,255,255,0.15)",
+                    },
+                    "& .MuiTabs-indicator": { backgroundColor: "#fff", height: 3 },
+                  }}
+                >
+                  <Tab icon={<FiMessageCircle size={18} />} iconPosition="start" label="Chat" />
+                  <Tab icon={<FiHeart size={18} />} iconPosition="start" label="Favoritos" />
+                  <Tab icon={<FiUser size={18} />} iconPosition="start" label="Perfil" />
+                </Tabs>
 
-            <Button
-              variant="contained"
-              startIcon={<FiPlus />}
-              onClick={() => navigate("/create-item")}
-              sx={{
-                bgcolor: "#22c55e",
-                color: "white",
-                textTransform: "none",
-                fontWeight: 600,
-                borderRadius: "10px",
-                px: 2.5,
-                height: 44,
-                "&:hover": { bgcolor: "#16a34a" },
-                boxShadow: "0 2px 8px rgba(34,197,94,0.2)",
-              }}
-            >
-              Adicionar
-            </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<FiPlus />}
+                  onClick={() => navigate("/create-item")}
+                  sx={{
+                    bgcolor: "#fff",
+                    color: "#28a745",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "10px",
+                    px: 2.5,
+                    height: 44,
+                    transition: "all 0.3s ease",
+                    "&:hover": { 
+                      bgcolor: "#f0f0f0",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                    },
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  Adicionar
+                </Button>
 
-            {/* small-screen add button kept for responsive layouts */}
-            <IconButton
-              onClick={() => navigate("/create-item")}
-              sx={{
-                display: { xs: "flex", sm: "none" },
-                bgcolor: "#22c55e",
-                color: "white",
-                "&:hover": { bgcolor: "#16a34a" },
-              }}
-            >
-              <FiPlus size={20} />
-            </IconButton>
+                {/* small-screen add button kept for responsive layouts */}
+                <IconButton
+                  onClick={() => navigate("/create-item")}
+                  sx={{
+                    display: { xs: "flex", sm: "none" },
+                    bgcolor: "#fff",
+                    color: "#28a745",
+                    transition: "all 0.3s ease",
+                    "&:hover": { 
+                      bgcolor: "#f0f0f0",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                    },
+                  }}
+                >
+                  <FiPlus size={20} />
+                </IconButton>
+              </>
+            ) : (
+              <>
+                {/* HEADER PARA USUÁRIOS NÃO LOGADOS */}
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate("/login")}
+                  sx={{
+                    bgcolor: "transparent",
+                    color: "#fff",
+                    borderColor: "#fff",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "10px",
+                    px: 3,
+                    height: 44,
+                    transition: "all 0.3s ease",
+                    "&:hover": { 
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      borderColor: "#fff",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  Entrar
+                </Button>
 
-            {/* Cart button removed visually but kept commented for future use */}
-            {/*
-            <IconButton aria-label="carrinho" sx={{ color: "#222" }}>
-              <FiShoppingCart size={22} />
-            </IconButton>
-            */}
+                <Button
+                  variant="contained"
+                  onClick={() => navigate("/register")}
+                  sx={{
+                    bgcolor: "#fff",
+                    color: "#28a745",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    borderRadius: "10px",
+                    px: 3,
+                    height: 44,
+                    transition: "all 0.3s ease",
+                    "&:hover": { 
+                      bgcolor: "#f0f0f0",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                    },
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  Cadastrar
+                </Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </AppBar>

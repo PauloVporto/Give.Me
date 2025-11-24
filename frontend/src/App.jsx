@@ -44,16 +44,20 @@ import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Profile from "./pages/Profile";
+import MyItems from "./pages/MyItems";
+import Favorites from "./pages/Favorites";
+import { AlertProvider } from "./contexts/AlertContext";
 
 import "./styles/global.css";
 
 import ListItem from "./pages/ListItem";
 import ProductDetail from "./pages/ProductDetail";
 import EditItem from "./pages/EditItem";
+import Chat from "./pages/Chat";
 
 function Logout() {
   localStorage.clear();
-  return <Navigate to="/login" />;
+  return <Navigate to="/" />;
 }
 
 function RegisterAndLogout() {
@@ -63,58 +67,70 @@ function RegisterAndLogout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* públicas */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+    <AlertProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* públicas */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/register" element={<RegisterAndLogout />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
 
-        {/* privadas */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-item"
-          element={
-            <ProtectedRoute>
-              <ListItem />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/product/:slug"
-          element={
-            <ProtectedRoute>
-              <ProductDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/edit-item/:id"
-          element={
-            <ProtectedRoute>
-              <EditItem />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+          {/* privadas */}
+          <Route
+            path="/create-item"
+            element={
+              <ProtectedRoute>
+                <ListItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-item/:id"
+            element={
+              <ProtectedRoute>
+                <EditItem />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-items"
+            element={
+              <ProtectedRoute>
+                <MyItems />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <Favorites />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </BrowserRouter>
+          {/* fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </AlertProvider>
   );
 }

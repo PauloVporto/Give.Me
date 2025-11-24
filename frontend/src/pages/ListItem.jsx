@@ -20,6 +20,7 @@ export default function ListItem() {
   const [location, setLocation] = useState("");       // (não usado no backend - usar city)
   const [price, setPrice] = useState("");             // (não usado no backend - modelo não tem campo price)
   const [files, setFiles] = useState([]);             // (não usado no backend - modelo ItemPhoto existe mas não está implementado)
+  const [tradeInterest, setTradeInterest] = useState(""); // Campo para interesse de troca
   
   const [submitting, setSubmitting] = useState(false);
   const dropRef = useRef(null);
@@ -99,10 +100,29 @@ export default function ListItem() {
       formData.append('description', desc);
       formData.append('category', categoryObj.id);
       formData.append('status', mapConditionToStatus(condition));
+      formData.append('type', mapType(type));
       formData.append('listing_state', 'active');
       
+      // Adicionar preço se o tipo for "sell"
+      if (type === "sell" && price) {
+        formData.append('price', price);
+      }
+      
+      // Adicionar interesse de troca se o tipo for "trade"
+      if (type === "trade" && tradeInterest.trim()) {
+        formData.append('trade_interest', tradeInterest.trim());
+      }
+      
       if (location) {
-        formData.append('city', location);
+        const parts = location.split(",");
+
+        if (parts.length === 2) {
+          const cityName = parts[0].trim();
+          const cityState = parts[1].trim();
+
+          formData.append("city_name", cityName);
+          formData.append("city_state", cityState);
+        }
       }
       
       files.forEach((file) => {
@@ -157,7 +177,7 @@ export default function ListItem() {
 
         {/* Photos */}
         <section style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--text-dark)" }}>Photos</h2>
+          <h2 style={{ fontSize: 14, margin: "0 0 8px", color: "var(--text-dark)" }}>Fotos do Item</h2>
           <div
             ref={dropRef}
             onDrop={onDrop}
@@ -238,12 +258,12 @@ export default function ListItem() {
 
         {/* Item Information */}
         <section>
-          <h2 style={{ fontSize: 14, margin: "0 0 12px", color: "var(--text-dark)" }}>Item Information</h2>
+          <h2 style={{ fontSize: 14, margin: "0 0 12px", color: "var(--text-dark)" }}>Informações do Item</h2>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div style={{ gridColumn: "1 / -1" }}>
               <input
-                placeholder="Item Title (Ex: Used Cell Phone, Children's Clothing)"
+                placeholder="Título do Item (Ex: Celular Usado, Roupas Infantis)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={inputStyle}
@@ -253,7 +273,7 @@ export default function ListItem() {
             <div style={{ gridColumn: "1 / -1" }}>
               <textarea
                 rows={4}
-                placeholder="Description"
+                placeholder="Descrição"
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
                 style={{ ...inputStyle, resize: "vertical" }}
@@ -261,7 +281,7 @@ export default function ListItem() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Category</label>
+              <label style={labelStyle}>Categoria</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -276,9 +296,9 @@ export default function ListItem() {
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Location</label>
+              <label style={labelStyle}>Localização</label>
               <input
-                placeholder="City, State"
+                placeholder="Cidade, Estado"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 style={inputStyle}
@@ -288,21 +308,43 @@ export default function ListItem() {
 
           {/* Listing Type */}
           <div style={{ marginTop: 16 }}>
-            <label style={labelStyle}>Listing Type</label>
+            <label style={labelStyle}>Tipo de Anúncio</label>
             <Segmented
               value={type}
-              onChange={setType}
+              onChange={(value) => {
+                setType(value);
+                if (value !== "trade") {
+                  setTradeInterest(""); // Limpa o campo se não for troca
+                }
+              }}
               options={[
-                { value: "sell", label: "Sell" },
-                { value: "donation", label: "Donation" },
-                { value: "trade", label: "Trade" },
+                { value: "sell", label: "Venda" },
+                { value: "trade", label: "Troca" },
+                { value: "donation", label: "Doação" },
               ]}
             />
           </div>
 
+          {/* Campo de interesse de troca - aparece apenas quando type === "trade" */}
+          {type === "trade" && (
+            <div style={{ marginTop: 16 }}>
+              <label style={labelStyle}>O que você aceita em troca?</label>
+              <textarea
+                rows={3}
+                placeholder="Ex: Bicicleta aro 26, notebook usado, ou qualquer eletrônico"
+                value={tradeInterest}
+                onChange={(e) => setTradeInterest(e.target.value)}
+                style={{ ...inputStyle, resize: "vertical", marginTop: 8 }}
+              />
+              <small style={{ color: "#666", fontSize: 12, display: "block", marginTop: 4 }}>
+                Descreva o que você tem interesse em receber como troca por este item
+              </small>
+            </div>
+          )}
+
           {type === "sell" && (
             <div style={{ marginTop: 12, maxWidth: 280 }}>
-              <label style={labelStyle}>Price</label>
+              <label style={labelStyle}>Preço</label>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ ...inputStyle, width: 56, textAlign: "center" }}>R$</span>
                 <input
@@ -318,14 +360,14 @@ export default function ListItem() {
 
           {/* Condition */}
           <div style={{ marginTop: 20 }}>
-            <label style={labelStyle}>Condition</label>
+            <label style={labelStyle}>Condição</label>
             <Chips
               value={condition}
               onChange={setCondition}
               options={[
-                { value: "new", label: "New" },
-                { value: "used-good", label: "Used - Good Condition" },
-                { value: "needs-repair", label: "Needs Repair" },
+                { value: "new", label: "Novo" },
+                { value: "used-good", label: "Usado - Bom Estado" },
+                { value: "needs-repair", label: "Precisa de Reparo" },
               ]}
             />
           </div>
@@ -340,7 +382,7 @@ export default function ListItem() {
               opacity: submitting ? 0.7 : 1,
             }}
           >
-            {submitting ? "Publicando..." : "Publish Item"}
+            {submitting ? "Publicando..." : "Publicar Item"}
           </button>
         </footer>
       </form>
