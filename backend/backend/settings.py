@@ -146,8 +146,12 @@ AWS_S3_CUSTOM_DOMAIN = os.getenv("SUPABASE_CUSTOM_DOMAIN")
 AWS_S3_ADDRESSING_STYLE = "path"
 AWS_DEFAULT_ACL = None
 AWS_S3_REGION_NAME = "sa-east-1"
-MEDIA_URL = "https://" + AWS_S3_CUSTOM_DOMAIN + "/"
 
+if AWS_S3_CUSTOM_DOMAIN:
+    MEDIA_URL = "https://" + AWS_S3_CUSTOM_DOMAIN + "/"
+else:
+    MEDIA_URL = "/media/"
+    
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_CREDENTIALS = True
