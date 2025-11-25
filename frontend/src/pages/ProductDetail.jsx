@@ -317,24 +317,25 @@ export default function ProductDetail() {
                   </Box>
                 </Box>
 
-                <Button
-                  fullWidth
-                  size="large"
-                  variant="contained"
-                  startIcon={<ChatBubbleOutline />}
-                  disabled={!isAuthenticated || isOwner}
-                  onClick={handleChatStart}
-                  sx={{
-                    bgcolor: '#007a55',
-                    '&:hover': {
-                      bgcolor: '#006845'
-                    },
-                    textTransform: 'none',
-                    height: 48
-                  }}
-                >
-                  Iniciar Conversa
-                </Button>
+                {isAuthenticated && !isOwner && (
+                  <Button
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    startIcon={<ChatBubbleOutline />}
+                    onClick={handleChatStart}
+                    sx={{
+                      bgcolor: '#007a55',
+                      '&:hover': {
+                        bgcolor: '#006845'
+                      },
+                      textTransform: 'none',
+                      height: 48
+                    }}
+                  >
+                    Iniciar Conversa
+                  </Button>
+                )}
               </Box>
 
               <Box sx={{
