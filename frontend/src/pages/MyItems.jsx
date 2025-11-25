@@ -1,3 +1,4 @@
+import { useAlert } from "../contexts/AlertContext";
 import "../styles/MyItems.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import api from "../api";
 import { Navbar, fullUrl, LoadingContainer, EmptyState } from "../components/Base";
 
 export default function MyItems() {
+    const { showError } = useAlert();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState("Todos");
@@ -40,7 +42,7 @@ export default function MyItems() {
         setItems(items.filter(item => item.id !== itemId));
       } catch (error) {
         console.error("Erro ao deletar item:", error);
-        alert("Erro ao deletar item. Tente novamente.");
+          showError("Erro ao deletar item. Tente novamente.");
       }
     }
   };

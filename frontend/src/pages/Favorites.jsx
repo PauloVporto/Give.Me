@@ -1,3 +1,4 @@
+import { useAlert } from "../contexts/AlertContext";
 import "../styles/Favorites.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import api from "../api";
 import { Navbar, fullUrl, LoadingContainer, EmptyState } from "../components/Base";
 
 export default function Favorites() {
+    const { showError } = useAlert();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,14 +35,14 @@ export default function Favorites() {
     try {
       await api.delete(`/favorites/remove/${itemId}/`);
       // Remover da lista local
-      setFavorites(favorites.filter(fav => fav.item.id !== itemId));
+      setFavorites((prev) => prev.filter((fav) => fav.item.id !== itemId));
     } catch (error) {
       console.error("Erro ao remover favorito:", error);
       if (error.response?.status === 404) {
         // Se não encontrado, apenas remover do estado local
         setFavorites(favorites.filter(fav => fav.item.id !== itemId));
       } else {
-        alert("Erro ao remover favorito");
+        showError("Erro ao remover favorito");
       }
     }
   };

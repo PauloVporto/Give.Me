@@ -2,8 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import api from "../api";
 import { BackHeader, LoadingContainer, inputStyle, labelStyle, primaryButtonStyle, fullUrl } from "../components/Base";
+import { useAlert } from "../contexts/AlertContext";
 
 export default function EditItem() {
+    const { showError, showWarning, showSuccess } = useAlert();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -70,7 +72,7 @@ export default function EditItem() {
         setExistingPhotoIds(data.photos_id || []);
       } catch (e) {
         console.error("Erro ao carregar item:", e);
-        alert("Erro ao carregar dados do item");
+        showError("Erro ao carregar dados do item");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -102,10 +104,10 @@ export default function EditItem() {
     try {
       await api.delete(`/items/photos/${photoId}/`);
       setExistingPhotos((prev) => prev.filter((p) => p.id !== photoId));
-      alert("Foto removida com sucesso!");
+      showSuccess("Foto removida com sucesso!");
     } catch (e) {
       console.error("Erro ao remover foto:", e);
-      alert("Erro ao remover foto.");
+      showError("Erro ao remover foto.");
     }
   }
 
@@ -128,7 +130,7 @@ export default function EditItem() {
     e.preventDefault();
     
     if (!title.trim()) {
-      alert("Título é obrigatório.");
+      showError("Título é obrigatório.");
       return;
     }
 
@@ -171,7 +173,6 @@ export default function EditItem() {
         newFiles.forEach((file) => {
           formData.append('photos', file);
         });
-        
         try {
           await api.post(`/items/${id}/photos/`, formData, {
             headers: {
@@ -180,15 +181,14 @@ export default function EditItem() {
           });
         } catch (photoError) {
           console.error("Erro ao enviar fotos:", photoError);
-          alert("Item atualizado, mas houve erro ao adicionar algumas fotos.");
+          showWarning("Item atualizado, mas houve erro ao adicionar algumas fotos.");
         }
       }
-
-      alert("Item atualizado com sucesso!");
+      showSuccess("Item atualizado com sucesso!");
       navigate(`/product/${id}`);
     } catch (e) {
       console.error("Erro ao atualizar item:", e);
-      alert("Erro ao atualizar item.");
+      showError("Erro ao atualizar item.");
     } finally {
       setSubmitting(false);
     }

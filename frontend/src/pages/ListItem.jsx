@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { BackHeader, inputStyle, labelStyle, primaryButtonStyle } from "../components/Base";
+import { useAlert } from "../contexts/AlertContext";
 
 export default function ListItem() {
+    const { showError, showWarning, showSuccess } = useAlert();
   const navigate = useNavigate();
 
   // Estados para os campos do formulário
@@ -76,7 +78,10 @@ export default function ListItem() {
   async function onSubmit(e) {
     e.preventDefault();
     const err = validate();
-    if (err) return alert(err);
+    if (err) {
+      showError(err);
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -85,7 +90,7 @@ export default function ListItem() {
       const categoryObj = categories.find(c => String(c.id) === String(category));
 
       if (!categoryObj) {
-        alert("Categoria inválida. Escolha uma das opções do select.");
+        showWarning("Categoria inválida. Escolha uma das opções do select.");
         setSubmitting(false);
         return;
       }
@@ -135,9 +140,8 @@ export default function ListItem() {
         }
       });
 
-      alert("Item publicado com sucesso!");
+      showSuccess("Item publicado com sucesso!");
       console.log("Item criado:", data);
-      
       const itemId = data.id;
       navigate(`/product/${itemId}`);
     } catch (e) {
@@ -153,7 +157,7 @@ export default function ListItem() {
         errorMsg += e.message;
       }
       
-      alert(errorMsg);
+      showError(errorMsg);
     } finally {
       setSubmitting(false);
     }

@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { FiArrowLeft } from "react-icons/fi";
 import { Navbar, LoadingContainer, EmptyState } from "../components/Base";
+import { useAlert } from "../contexts/AlertContext";
 import { chatAPI } from "../api";
 import api from "../api";
 import ConversationItem from "../components/chat/ConversationItem";
@@ -17,6 +18,7 @@ import ChatWindow from "../components/chat/ChatWindow";
 import { subscribeToMessages, unsubscribeFromMessages } from "../supabaseClient";
 
 export default function Chat() {
+    const { showError } = useAlert();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -139,7 +141,7 @@ export default function Chat() {
       }, 100);
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
-      alert("Erro ao enviar mensagem. Tente novamente.");
+      showError("Erro ao enviar mensagem. Tente novamente.");
     } finally {
       setSendingMessage(false);
     }

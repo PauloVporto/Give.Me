@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { useAlert } from "../contexts/AlertContext";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import "../styles/Form.css";
 
@@ -22,6 +23,7 @@ const FacebookIcon = () => (
 );
 
 function Form({ route, method }) {
+    const { showError } = useAlert();
   const navigate = useNavigate();
 
   const initialData =
@@ -58,7 +60,7 @@ function Form({ route, method }) {
       }
     } catch (error) {
       const msg = error?.response?.data || error.message || "Erro desconhecido";
-      alert(`Erro ao processar requisição: ${typeof msg === "string" ? msg : JSON.stringify(msg)}`);
+      showError(`Erro ao processar requisição: ${typeof msg === "string" ? msg : JSON.stringify(msg)}`);
       console.error("Auth error:", error);
     } finally {
       setLoading(false);
