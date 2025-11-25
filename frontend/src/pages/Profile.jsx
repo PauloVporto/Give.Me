@@ -34,10 +34,20 @@ export default function Profile() {
         if (mounted) setProfile(userData);
 
         const { data: itemsData } = await api.get("/items/my-items/");
-        if (mounted) setItemsCount(Array.isArray(itemsData) ? itemsData.length : 0);
+        let itemsTotal = 0;
+        if (Array.isArray(itemsData)) {
+          itemsTotal = itemsData.length;
+        } else if (itemsData?.count !== undefined) {
+          itemsTotal = itemsData.count;
+        } else if (itemsData?.results) {
+          itemsTotal = itemsData.results.length;
+        }
+        console.log("Total de itens do usuário:", itemsTotal);
+        if (mounted) setItemsCount(itemsTotal);
         
       } catch (error) {
         console.error("Erro ao buscar dados do perfil:", error);
+        if (mounted) setItemsCount(0);
       } finally {
         if (mounted) setLoading(false);
       }

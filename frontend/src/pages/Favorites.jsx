@@ -20,9 +20,11 @@ export default function Favorites() {
     try {
       setLoading(true);
       const { data } = await api.get("/favorites/");
-      setFavorites(data);
+      const favoritesList = Array.isArray(data) ? data : (data.results || []);
+      setFavorites(favoritesList);
     } catch (error) {
       console.error("Erro ao buscar favoritos:", error);
+      setFavorites([]);
     } finally {
       setLoading(false);
     }
@@ -34,13 +36,16 @@ export default function Favorites() {
     
     try {
       await api.delete(`/favorites/remove/${itemId}/`);
-      // Remover da lista local
-      setFavorites((prev) => prev.filter((fav) => fav.item.id !== itemId));
+
+      setFavorites(prevFavorites => 
+        Array.isArray(prevFavorites) ? prevFavorites.filter(fav => fav.item.id !== itemId) : []
+      );
     } catch (error) {
       console.error("Erro ao remover favorito:", error);
       if (error.response?.status === 404) {
-        // Se não encontrado, apenas remover do estado local
-        setFavorites(favorites.filter(fav => fav.item.id !== itemId));
+        setFavorites(prevFavorites => 
+          Array.isArray(prevFavorites) ? prevFavorites.filter(fav => fav.item.id !== itemId) : []
+        );
       } else {
         showError("Erro ao remover favorito");
       }

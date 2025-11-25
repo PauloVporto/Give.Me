@@ -31,9 +31,10 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class ListUsersView(generics.ListAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.all().order_by("username")
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
+    pagination_class = None
 
 
 class DeleteUserView(generics.DestroyAPIView):
@@ -95,7 +96,9 @@ class ReadItemView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        return Item.objects.all()
+        return Item.objects.select_related(
+            "user", "user__userprofile", "city", "category"
+        ).prefetch_related("photos")
 
 
 class ReadItemsView(generics.ListAPIView):
@@ -104,9 +107,14 @@ class ReadItemsView(generics.ListAPIView):
     description = "Endpoint for reading all items."
     serializer_class = ItemSerializer
     permission_classes = [AllowAny]
+    pagination_class = None
 
     def get_queryset(self):
-        return Item.objects.all()
+        return (
+            Item.objects.select_related("user", "city", "category")  # Evita N+1 queries
+            .prefetch_related("photos")  # Carrega fotos de uma vez
+            .order_by("-created_at")
+        )
 
 
 class MyItemsView(generics.ListAPIView):
@@ -115,10 +123,16 @@ class MyItemsView(generics.ListAPIView):
     description = "Endpoint for reading items of authenticated user."
     serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
-        return Item.objects.filter(user=user).order_by("-created_at")
+        return (
+            Item.objects.filter(user=user)
+            .select_related("city", "category")
+            .prefetch_related("photos")
+            .order_by("-created_at")
+        )
 
 
 class UserProfileView(generics.RetrieveAPIView):
@@ -148,7 +162,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
 
 
 class ListCategoriesView(generics.ListAPIView):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
 
@@ -168,16 +182,17 @@ class CreateCategoryView(generics.CreateAPIView):
 
 
 class ListCitiesView(generics.ListAPIView):
-    queryset = City.objects.all()
+    queryset = City.objects.all().order_by("name")
     serializer_class = CitySerializer
     permission_classes = [AllowAny]
 
 
 class SearchItemView(generics.ListAPIView):
     serializer_class = ItemSerializer
-    queryset = Item.objects.all()
+    queryset = Item.objects.all().order_by("-created_at")
     filter_backends = [filters.SearchFilter]
     search_fields = ["title"]
+    pagination_class = None
 
 
 @api_view(["POST"])
@@ -249,11 +264,17 @@ def delete_item_photo(request, photo_id):
 class ListFavoritesView(generics.ListAPIView):
     serializer_class = FavoriteSerializer
     permission_classes = [AllowAny]
+    pagination_class = None
 
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
-            return Favorite.objects.filter(user=user).order_by("-created_at")
+            return (
+                Favorite.objects.filter(user=user)
+                .select_related("item", "item__user", "item__city", "item__category")
+                .prefetch_related("item__photos")
+                .order_by("-created_at")
+            )
         return Favorite.objects.none()
 
 

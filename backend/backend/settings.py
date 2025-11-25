@@ -13,17 +13,28 @@ SECRET_KEY = os.getenv(
     "SECRET_KEY", "django-insecure-ia33j3j(x)i$9#s9kpti!k0#+8t3u=^4^9fd3!1$ytm1iv3wtc"
 )
 
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = (
     os.getenv("ALLOWED_HOSTS", "*").split(",") if os.getenv("ALLOWED_HOSTS") else ["*"]
 )
+
+# CSRF Protection
+CSRF_TRUSTED_ORIGINS = [
+    "https://giveme-production.up.railway.app",
+    "https://give-me.vercel.app",
+    "https://*.vercel.app",
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,  # Limita queries grandes
 }
 
 SIMPLE_JWT = {
@@ -50,8 +61,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -84,21 +97,15 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PWD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
-        "OPTIONS": {"sslmode": "require"},
-        "CONN_MAX_AGE": 60,
+        "OPTIONS": {
+            "sslmode": "require",
+            "connect_timeout": 10,
+            "options": "-c statement_timeout=30000",  # 30 segundos
+        },
+        "CONN_MAX_AGE": 600,  # 10 minutos - reutiliza conexões
+        "CONN_HEALTH_CHECKS": True,  # Verifica saúde da conexão
     }
 }
-
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_ACCESS_KEY")
-AWS_SECRET_ACCESS_KEY = os.getenv("SUPABASE_SECRET_KEY")
-AWS_S3_ENDPOINT_URL = os.getenv("SUPABASE_ENDPOINT_URL")
-AWS_STORAGE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
-AWS_S3_CUSTOM_DOMAIN = os.getenv("SUPABASE_CUSTOM_DOMAIN")
-AWS_S3_ADDRESSING_STYLE = "path"
-AWS_DEFAULT_ACL = None
-AWS_S3_REGION_NAME = "sa-east-1"
-MEDIA_URL = "https://" + AWS_S3_CUSTOM_DOMAIN + "/"
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -127,9 +134,24 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# WhiteNoise Configuration
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+AWS_ACCESS_KEY_ID = os.getenv("SUPABASE_ACCESS_KEY")
+AWS_SECRET_ACCESS_KEY = os.getenv("SUPABASE_SECRET_KEY")
+AWS_S3_ENDPOINT_URL = os.getenv("SUPABASE_ENDPOINT_URL")
+AWS_STORAGE_BUCKET_NAME = os.getenv("SUPABASE_BUCKET_NAME")
+AWS_S3_CUSTOM_DOMAIN = os.getenv("SUPABASE_CUSTOM_DOMAIN")
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_DEFAULT_ACL = None
+AWS_S3_REGION_NAME = "sa-east-1"
+
+if AWS_S3_CUSTOM_DOMAIN:
+    MEDIA_URL = "https://" + AWS_S3_CUSTOM_DOMAIN + "/"
+else:
+    MEDIA_URL = "/media/"
+    
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_CREDENTIALS = True
@@ -137,9 +159,9 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 FRONTEND_URL = "https://give-me.vercel.app"
 
-if any("pytest" in arg for arg in sys.argv):
+if os.getenv("TEST_ENV") == "true":
     try:
         DATABASES["default"].setdefault("OPTIONS", {})
-        DATABASES["default"]["OPTIONS"]["sslmode"] = os.getenv("DB_SSLMODE", "disable")
+        DATABASES["default"]["OPTIONS"]["sslmode"] = "disable"
     except KeyError as e:
         print(e)
