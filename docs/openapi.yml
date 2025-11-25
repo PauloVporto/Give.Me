@@ -2,9 +2,24 @@ openapi: 3.0.3
 info:
   title: GIVE.ME API
   description: |
-    API para a plataforma GIVE.ME - uma aplicação de doação de itens.
+    API RESTful para a plataforma **GIVE.ME** - uma aplicação moderna de economia circular 
+    que conecta pessoas para doar, trocar ou vender itens usados.
     
-    Esta API permite que usuários se registrem, façam login e gerenciem itens para doação.
+    ## Sobre a Plataforma
+    Give.Me é uma solução completa que permite:
+    - **Doações**: Conectar quem quer doar com quem precisa
+    - **Trocas**: Facilitar escambo de itens entre usuários
+    - **Vendas**: Marketplace de produtos usados com preços competitivos
+    
+    ## Funcionalidades da API
+    - Autenticação JWT com refresh tokens
+    - CRUD completo de itens (doação, troca, venda)
+    - Upload de múltiplas imagens por item
+    - Sistema de favoritos
+    - Chat entre usuários (em desenvolvimento)
+    - Busca e filtros avançados
+    - Perfis de usuário personalizáveis
+    - Notificações (planejado)
     
     ## Autenticação
     A API utiliza autenticação JWT (JSON Web Token). Para acessar endpoints protegidos, 
@@ -19,7 +34,12 @@ info:
     3. Use o access_token para acessar endpoints protegidos
     4. Renove o token usando `/token/refresh/` quando expirar
     
-  version: "1.0.0"
+    ## Tipos de Transação
+    - `Donation`: Doação gratuita
+    - `Trade`: Troca entre usuários
+    - `Sell`: Venda com preço definido
+    
+  version: "2.0.0"
   contact:
     name: Equipe GIVE.ME
     email: suporte@giveme.com
