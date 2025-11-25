@@ -315,8 +315,8 @@ export function TopNav({ activePage = "home", onSearch }) {
   );
 }
 
-export function Navbar({ activePage = "home" }) {
-  return <TopNav activePage={activePage} />;
+export function Navbar({ activePage = "home", onSearch }) {
+  return <TopNav activePage={activePage} onSearch={onSearch} />;
 }
 
 /* -------------------------------------------------------------------------- */
