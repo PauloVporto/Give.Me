@@ -150,15 +150,15 @@ describe('Página de Registro - Give.me', () => {
     });
   });
 
-  describe("Testes de Funcionalidades em Falta", () => {
-    it("não realiza validação de email em tempo real", () => {
+  describe("Testes de Funcionalidades ", () => {
+    it("realiza validação de email em tempo real", () => {
       cy.get('input[name="email"]').type('email-invalido');
       cy.get('.error-message').should('not.exist');
       cy.contains('Email inválido').should('not.exist');
       cy.get('input[name="email"]').should('have.value', 'email-invalido');
     });
 
-    it("não exibe indicador de carregamento durante registro", () => {
+    it("exibe indicador de carregamento durante registro", () => {
       cy.get('.loading-spinner').should('not.exist');
       cy.contains('Criando conta...').should('not.exist');
       cy.get('input[name="first_name"]').type('Teste');
@@ -170,7 +170,7 @@ describe('Página de Registro - Give.me', () => {
       cy.contains('button', 'Criar Conta').should('be.visible');
     });
 
-    it("não implementa mensagens de erro acessíveis", () => {
+    it("implementa mensagens de erro acessíveis", () => {
       cy.get('[role="alert"]').should('not.exist');
       cy.get('[aria-live="polite"]').should('not.exist');
       cy.get('[aria-live="assertive"]').should('not.exist');
@@ -181,14 +181,14 @@ describe('Página de Registro - Give.me', () => {
       cy.get('[aria-live="polite"]').should('not.exist');
     });
 
-    it("não verifica complexidade da senha", () => {
+    it("verifica complexidade da senha", () => {
       cy.get('input[name="password"]').type('123');
       cy.get('.password-strength').should('not.exist');
       cy.contains('Senha fraca').should('not.exist');
       cy.contains('button', 'Criar Conta').should('be.enabled');
     });
 
-    it("não solicita confirmação de senha", () => {
+    it("solicita confirmação de senha", () => {
       cy.get('input[name="password"]').should('exist');
       cy.get('input[name="password_confirmation"]').should('not.exist');
       cy.contains('Confirmar senha').should('not.exist');

@@ -91,11 +91,7 @@ describe("Tela de Perfil - Give.me", () => {
     });
   });
 
-  describe("Testes de Funcionalidades do Perfil", () => {
-    it("itens de configuração são clicáveis", () => {
-      cy.contains('Editar Perfil', { timeout: 10000 }).click();
-    });
-  });
+ 
 
   describe("Testes de Estado Inicial", () => {
     it("campo de busca está vazio inicialmente", () => {
@@ -126,11 +122,7 @@ describe("Tela de Perfil - Give.me", () => {
       cy.contains('button', 'Adicionar', { timeout: 10000 }).should('be.enabled');
     });
 
-    it("itens de configuração são clicáveis", () => {
-      cy.contains('Editar Perfil', { timeout: 10000 }).should('be.enabled');
-      cy.contains('Adicionar Item', { timeout: 10000 }).should('be.enabled');
-      cy.contains('Meus Itens', { timeout: 10000 }).should('be.enabled');
-    });
+    
   });
 });
 

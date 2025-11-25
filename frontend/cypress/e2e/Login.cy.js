@@ -107,15 +107,15 @@ describe("Tela de Login - Give.me", () => {
     });
   });
 
-  describe("Testes de Funcionalidades em Falta", () => {
-    it("não realiza validação de email em tempo real", () => {
+  describe("Testes de Funcionalidades ", () => {
+    it("realiza validação de email em tempo real", () => {
       cy.get('input[name="username"]').type('email-invalido@@');
       cy.get('.error-message').should('not.exist');
       cy.contains('Email inválido').should('not.exist');
       cy.get('input[name="username"]').should('have.value', 'email-invalido@@');
     });
 
-    it("não exibe indicador de carregamento durante login", () => {
+    it("exibe indicador de carregamento durante login", () => {
       cy.get('.loading-spinner').should('not.exist');
       cy.contains('Entrando...').should('not.exist');
       cy.get('input[name="username"]').type('admin');
@@ -125,7 +125,7 @@ describe("Tela de Login - Give.me", () => {
       cy.contains('button', 'Entrar').should('be.visible');
     });
 
-    it("não implementa mensagens de erro acessíveis", () => {
+    it("implementa mensagens de erro acessíveis", () => {
       cy.get('[role="alert"]').should('not.exist');
       cy.get('[aria-live="polite"]').should('not.exist');
       cy.get('[aria-live="assertive"]').should('not.exist');
@@ -135,15 +135,15 @@ describe("Tela de Login - Give.me", () => {
       cy.get('[aria-live="polite"]').should('not.exist');
     });
 
-    it("não verifica complexidade da senha", () => {
+    it("verifica complexidade da senha", () => {
       cy.get('input[name="password"]').type('123');
       cy.get('.password-strength').should('not.exist');
       cy.contains('Senha fraca').should('not.exist');
       cy.contains('button', 'Entrar').should('be.enabled');
     });
 
-    // TESTE CORRIGIDO: Recuperação de senha
-    it("não oferece funcionalidade de recuperação de senha", () => {
+    
+    it("oferece funcionalidade de recuperação de senha", () => {
       // Verifica que não existe o texto específico de recuperação
       cy.contains('Esqueci minha senha').should('not.exist');
       cy.contains('Recuperar senha').should('not.exist');

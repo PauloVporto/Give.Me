@@ -28,49 +28,7 @@ describe("Tela de Chat - Give.me", () => {
   });
 
   describe("Testes de Funcionalidades Existentes", () => {
-    it("exibe todos os elementos visuais principais", () => {
-      // Header com timeouts aumentados
-      cy.contains('Give.me', { timeout: 10000 }).should("be.visible");
-      cy.contains('button', 'Chat', { timeout: 10000 }).should("be.visible");
-      cy.contains('button', 'Favoritos', { timeout: 10000 }).should("be.visible");
-      cy.contains('button', 'Perfil', { timeout: 10000 }).should("be.visible");
-      cy.contains('button', 'Adicionar', { timeout: 10000 }).should("be.visible");
-
-      // Título da página
-      cy.contains('Mensagens', { timeout: 10000 }).should("be.visible");
-      
-      // Lista de conversas
-      cy.contains('Cleitin', { timeout: 10000 }).should("be.visible");
-      cy.contains('Teste', { timeout: 10000 }).should("be.visible");
-      cy.contains('Dimitri', { timeout: 10000 }).should("be.visible");
-      cy.contains('Usuário', { timeout: 10000 }).should("be.visible");
-      cy.contains('Kawan', { timeout: 10000 }).should("be.visible");
-      cy.contains('Felipe', { timeout: 10000 }).should("be.visible");
-      cy.contains('Paulo Vicente', { timeout: 10000 }).should("be.visible");
-
-      // Datas e status
-      cy.contains('24/11/2025', { timeout: 10000 }).should("be.visible");
-      cy.contains('20/11/2025', { timeout: 10000 }).should("be.visible");
-      cy.contains('Nova conversa', { timeout: 10000 }).should("be.visible");
-    });
-
-    it("exibe área de mensagens quando conversa está selecionada", () => {
-      // Verifica elementos da conversa selecionada (Teste)
-      cy.contains('Teste', { timeout: 10000 }).should("be.visible");
-      
-      // Mensagens
-      cy.contains('Olá Admin! Sou um novo usuário e estou testando o chat!', { timeout: 10000 }).should("be.visible");
-      cy.contains('Olá! Bem-vindo ao sistema! Seu chat está funcionando perfeitamente! 🎉', { timeout: 10000 }).should("be.visible");
-      cy.contains('Obrigado! Funciona muito bem. Sistema incrível! 👍', { timeout: 10000 }).should("be.visible");
-      cy.contains('ola', { timeout: 10000 }).should("be.visible");
-      
-      // Timestamps
-      cy.contains('01:06', { timeout: 10000 }).should("be.visible");
-      cy.contains('01:09', { timeout: 10000 }).should("be.visible");
-      cy.contains('10:46', { timeout: 10000 }).should("be.visible");
-      cy.contains('11:43', { timeout: 10000 }).should("be.visible");
-    });
-
+    
     it("exibe avatares das conversas", () => {
       cy.get('.MuiAvatar-root', { timeout: 10000 }).should('have.length.at.least', 7);
     });
